@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Contract Review"
+  short_description: "Protect API and event compatibility"
+  default_prompt: "Use $api-contract-review to assess this contract change and its consumers."

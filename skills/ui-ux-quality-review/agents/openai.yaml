@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI/UX Quality Review"
+  short_description: "Review accessibility and interaction quality"
+  default_prompt: "Use $ui-ux-quality-review to assess this interface and verify the highest-risk UX concerns."

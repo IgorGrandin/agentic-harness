@@ -1,0 +1,12 @@
+model = "local-machine-model"
+
+[features]
+js_repl = true
+
+[agents]
+custom_local_key = "preserve-me"
+default_subagent_model = "old-model"
+default_subagent_reasoning_effort = "low"
+
+[mcp_servers.local_example]
+command = "local-only-command"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Systematic Debugging"
+  short_description: "Find root causes with repository evidence"
+  default_prompt: "Use $systematic-debugging to diagnose this failure from evidence before proposing a fix."

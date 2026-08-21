@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "memoryFiles": [
+    "INDEX.md",
+    "preferences.md",
+    "decisions.md",
+    "lessons.md"
+  ],
+  "agentFiles": [
+    "architect-escalation.toml",
+    "implementer.toml",
+    "reviewer.toml",
+    "scout.toml",
+    "verifier.toml"
+  ],
+  "skills": [
+    "api-contract-review",
+    "database-change-safety",
+    "frontend-design",
+    "repo-aware-architecture",
+    "sdd-workflow",
+    "systematic-debugging",
+    "ui-ux-quality-review"
+  ]
+}

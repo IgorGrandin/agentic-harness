@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repo-aware Architecture"
+  short_description: "Explore and record repository-based architecture"
+  default_prompt: "Use $repo-aware-architecture to compare repository-grounded design options and record the decision."

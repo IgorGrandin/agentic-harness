@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Design"
+  short_description: "Create intentional repository-aligned interfaces"
+  default_prompt: "Use $frontend-design to design and implement this interface with a clear visual direction."

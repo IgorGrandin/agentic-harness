@@ -1,0 +1,21 @@
+# Local test and backup artifacts
+.test-output/
+portable-backups/
+*.bak
+*.tmp
+
+# Never allow local Codex state or credentials into this repository
+auth.json
+**/auth.json
+sessions/
+**/sessions/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.jsonl
+.codex-global-state.json*
+installation_id
+.sandbox/
+.sandbox-secrets/
+cache/
+attachments/

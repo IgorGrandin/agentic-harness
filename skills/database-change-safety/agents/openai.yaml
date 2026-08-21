@@ -1,0 +1,4 @@
+interface:
+  display_name: "Database Change Safety"
+  short_description: "Plan safe schema and data changes"
+  default_prompt: "Use $database-change-safety to assess this database change and its rollout risks."
