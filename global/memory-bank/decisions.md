@@ -39,3 +39,11 @@ Status: active
 Decision: V1 runs at most three subagents concurrently. The router parallelizes only independent tasks with a material latency or context-isolation gain. Dependencies remain sequential. Concurrent writers require separate Git worktrees, non-overlapping ownership, and sequential integration.
 
 Rationale: bounded concurrency supports early evaluation while avoiding speculative fan-out, shared-worktree conflicts, and unnecessary token use.
+
+## 2026-08-21 — Version the portable global configuration privately
+
+Status: active
+
+Decision: `https://github.com/IgorGrandin/codex-global-config` is the private Git source of truth for the portable global Codex configuration. It contains the global `AGENTS.md`, Markdown memory bank, reusable subagent roles, user-authored skills, sanitized routing settings, and verified PowerShell install/export scripts. Authentication, sessions, caches, local databases, and machine identity remain local and must never be synchronized through this repository.
+
+Rationale: an explicit, allowlisted private repository makes the global SDD setup reproducible across computers without copying sensitive or machine-specific Codex state.
