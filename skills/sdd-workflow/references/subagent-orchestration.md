@@ -58,6 +58,10 @@ When the entire request is too small to recover spawning and synthesis overhead,
 
 Use no more agents than independent work items and never exceed three concurrently. A free slot is not a reason to fill it.
 
+## Lifecycle and handoff
+
+Close completed threads immediately after consuming their result. At handoff, leave zero active or idle agents unless explicit monitoring requires one; threads are not retained for history alone. After two consecutive no-progress windows totaling 10 minutes, inspect once, then interrupt and close the thread if it is complete, redundant, or stuck.
+
 ## Multiple writers and isolation
 
 Prefer a single writer. When concurrent implementation has a real benefit:

@@ -47,6 +47,12 @@
 - Run at most three subagents concurrently during V1.
 - Record each routing or escalation decision in the compact format defined by `sdd-workflow/references/subagent-orchestration.md`.
 
+## Subagent lifecycle
+
+- Close completed threads immediately after consuming their result.
+- At handoff, leave zero active or idle agents unless explicit monitoring requires one; do not retain threads for history alone.
+- After two consecutive no-progress windows totaling 10 minutes, inspect once, then interrupt and close the thread if it is complete, redundant, or stuck.
+
 ## Durable memory
 
 - Memory bank index: `~/.codex/memory-bank/INDEX.md`.

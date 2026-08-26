@@ -50,6 +50,14 @@ Decision: V1 runs at most three subagents concurrently. The router parallelizes 
 
 Rationale: bounded concurrency supports early evaluation while avoiding speculative fan-out, shared-worktree conflicts, and unnecessary token use.
 
+## 2026-08-26 — Close subagent work at lifecycle boundaries
+
+Status: active
+
+Decision: close completed threads after consuming their result; at handoff leave no active or idle agents except explicit monitoring. After two consecutive no-progress windows totaling 10 minutes, inspect once and interrupt/close if complete, redundant, or stuck.
+
+Rationale: explicit lifecycle cleanup prevents resource leakage without preserving threads solely for history.
+
 ## 2026-08-21 — Version the portable global configuration privately
 
 Status: active

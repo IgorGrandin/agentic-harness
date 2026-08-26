@@ -41,6 +41,7 @@ Maintain a private, reviewable Git repository containing only portable Codex con
 - **AC-09:** Bounded work larger than a microtask defaults to one sequential Luna Medium worker even when parallelism offers no benefit; Luna Max is a narrow reasoning escalation.
 - **AC-10:** Low-risk work uses the smallest decisive check, does not repeat passing checks without relevant changes, and does not add separate verification or review agents by default.
 - **AC-11:** Features and architecture decisions prefer existing extension points and the smallest sufficient change surface; speculative infrastructure requires an explicit present requirement.
+- **AC-12:** Subagent lifecycle closes completed work promptly, leaves no active or idle agents at handoff except explicit monitoring, and stops no-progress threads after one inspection following two consecutive windows totaling 10 minutes.
 
 ## Verification strategy
 
@@ -61,3 +62,4 @@ Maintain a private, reviewable Git repository containing only portable Codex con
 - Luna Medium is the configured bounded-worker default. Luna Max is explicit escalation for narrow reasoning-heavy work; Terra High and Sol High handle broader or consequential complexity.
 - Reasoning effort is proportional rather than fixed: Sol Low for microtasks, Sol Medium for clear bounded intake and synthesis, and Sol High for consequential work.
 - Existing extension points and the smallest sufficient change surface take precedence over speculative abstractions or future-proofing.
+- Completed or redundant subagent threads are closed promptly; handoffs leave no idle agents unless monitoring is explicit.
