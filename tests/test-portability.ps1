@@ -47,7 +47,7 @@ foreach ($requiredText in @(
     'js_repl = true',
     'custom_local_key = "preserve-me"',
     'default_subagent_model = "gpt-5.6-luna"',
-    'default_subagent_reasoning_effort = "max"',
+    'default_subagent_reasoning_effort = "medium"',
     '[mcp_servers.local_example]',
     'command = "local-only-command"'
 )) {

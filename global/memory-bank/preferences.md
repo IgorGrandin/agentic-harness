@@ -9,6 +9,7 @@
 
 ## Model use
 
-- Prefer GPT-5.6 Sol with high reasoning for complex work.
-- Prefer GPT-5.6 Luna with max reasoning for bounded, low-risk work and scouting, with early escalation rather than repeated failed attempts.
-- Prefer GPT-5.6 Terra with high reasoning as the intermediate escalation tier between Luna Max and Sol High.
+- Prefer GPT-5.6 Sol as orchestrator and spec author, with low reasoning for microtasks, medium for clear bounded intake and synthesis, and high for consequential work.
+- Prefer GPT-5.6 Luna with medium reasoning for bounded, low-risk work and scouting. Raise Luna to max only for narrow reasoning-heavy work, with early escalation rather than repeated failed attempts.
+- Prefer GPT-5.6 Terra with high reasoning as the intermediate escalation tier when Luna is insufficient but Sol High would be disproportionate.
+- Prefer existing extension points and the smallest change surface that meets current requirements; do not add infrastructure for hypothetical future needs.

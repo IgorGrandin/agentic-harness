@@ -28,9 +28,19 @@ Rationale: this preserves a compact, reviewable handoff between ChatGPT and Code
 
 Status: active
 
-Decision: Scout, Implementer, Verifier, Reviewer, and Architect/Escalation are reusable activity roles. They do not encode a technology, fixed model, or fixed skill. The primary orchestrator uses Sol High; spawned agents default to Luna Max, with Terra High and Sol High selected explicitly when complexity warrants escalation.
+Amended: 2026-08-21, based on observed overengineering in a bounded feature and successful simplification after reducing reasoning effort and clarifying non-goals.
+
+Decision: Scout, Implementer, Verifier, Reviewer, and Architect/Escalation are reusable activity roles. They do not encode a technology, fixed model, or fixed skill. The primary orchestrator stays in the Sol family with effort proportional to the task. Spawned agents default to Luna Medium, may rise to Luna Max for narrow reasoning-heavy work, and escalate to Terra High or Sol High when complexity warrants it.
 
 Rationale: role describes responsibility, model describes required capability, and skill supplies task-specific procedure. Keeping these axes separate avoids an agent explosion and permits routing changes without rewriting role definitions.
+
+## 2026-08-21 — Prefer the smallest sufficient change surface
+
+Status: active
+
+Decision: reuse existing extension points and choose the smallest change surface that satisfies current acceptance criteria. New components, abstractions, dependencies, persistence mechanisms, and configuration or startup changes require a present decision driver and evidence that the existing path is insufficient. Hypothetical future-proofing is out of scope unless explicitly requested.
+
+Rationale: additional architecture is not inherently higher quality. Requiring a present need prevents speculative complexity, reduces token and verification cost, and keeps changes reversible.
 
 ## 2026-08-20 — Parallelism is router-controlled
 

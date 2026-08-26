@@ -21,6 +21,8 @@ Turn repository-grounded uncertainty into an explicit, reviewable decision that 
 ## Decision discipline
 
 - Reuse existing extension points and conventions unless a driver justifies changing them.
+- Prefer the smallest change surface that satisfies the current requirements. Any new component, abstraction, dependency, persistence mechanism, or configuration/startup change must trace to a decision driver and explain why the existing path is insufficient.
+- Treat future-proofing and hypothetical extensibility as non-goals unless they are explicit requirements.
 - Compare two or three credible options, not artificial variants.
 - Prefer reversible and incremental paths when expected value is otherwise similar.
 - Include operational, data, security, compatibility, testing, migration, and rollback consequences when relevant.

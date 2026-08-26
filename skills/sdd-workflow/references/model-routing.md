@@ -6,7 +6,26 @@ Role, model, and skill are independent axes:
 - Model answers how much capability the task needs.
 - Skill answers which task-specific procedure should be loaded.
 
-## Sol High — default for consequential work
+Choose the processing lane before the model tier. Sequential execution can still be delegated; lack of parallel work does not make implementation an orchestrator responsibility.
+
+## Microtask direct-execution exception
+
+The Sol High orchestrator may execute directly only when all of these remain true:
+
+- the requested outcome and target are explicit;
+- the change is local, reversible, and carries no contract, data, security, architecture, or operational risk;
+- at most one targeted inspection, one small edit, and one focused check are needed;
+- spawning and summarizing a worker would cost more than completing the work.
+
+Do not create a spec, plan, architecture comparison, subagent, or routing log for this lane. Reclassify before continuing if the task needs broader exploration, multiple meaningful edits, or additional verification.
+
+## Sol reasoning — proportional orchestration
+
+Keep the primary orchestrator and spec author in the Sol family, but do not require high reasoning for every request:
+
+- **Low:** microtasks with an explicit target and no material decision.
+- **Medium:** clear bounded intake, routing, and synthesis.
+- **High:** consequential work with the signals below.
 
 Choose GPT-5.6 Sol with high reasoning when any of these apply:
 
@@ -17,9 +36,9 @@ Choose GPT-5.6 Sol with high reasoning when any of these apply:
 - verification is expensive or failure is costly;
 - the task requires synthesizing a large repository surface.
 
-## Luna Max — bounded efficiency lane
+## Luna Medium — bounded efficiency lane
 
-Choose GPT-5.6 Luna with max reasoning when the task is low risk, tightly bounded, and independently verifiable, such as:
+Choose GPT-5.6 Luna with medium reasoning when the task is low risk, tightly bounded, and independently verifiable, such as:
 
 - read-only scouting, file discovery, or call-site inventory;
 - mechanical edits with an exact transformation;
@@ -27,6 +46,12 @@ Choose GPT-5.6 Luna with max reasoning when the task is low risk, tightly bounde
 - a localized test or small bug with clear reproduction and expected behavior.
 
 Luna must not begin implementation merely to discover that the task is complex.
+
+For work in this lane that is larger than a microtask, the Sol orchestrator spawns one Luna Medium worker and waits sequentially. Sol must not absorb the implementation merely because parallelism provides no benefit. The Luna worker performs the smallest decisive verification and returns summarized evidence; Sol does not repeat a passing check unless relevant files or inputs changed afterward.
+
+## Luna Max — narrow reasoning escalation
+
+Raise Luna from medium to max only when the task remains narrow, low risk, and independently verifiable but needs unusually deep local tracing or several contained edge cases. Escalate to Terra High instead when the scope broadens across components, the objective becomes non-obvious, or risk becomes material.
 
 ## Terra High — intermediate escalation lane
 
@@ -49,8 +74,8 @@ Before implementation, scout only enough to estimate:
 - availability and cost of decisive verification;
 - presence of conflicting evidence or missing ownership.
 
-Escalate immediately to Terra High when the task exceeds Luna but remains bounded. Escalate directly to Sol High when one high-risk signal appears, several moderate signals combine into architectural uncertainty, or the spec itself needs revision. Return a compact escalation packet: observed scope, evidence, unresolved questions, risk, and recommended next tier. Do not repeat the same work in both lanes.
+Raise Luna Medium to Luna Max when only reasoning depth increases and the lane stays narrow. Escalate immediately to Terra High when the task broadens beyond Luna but remains bounded. Escalate directly to Sol High when one high-risk signal appears, several moderate signals combine into architectural uncertainty, or the spec itself needs revision. Return a compact escalation packet: observed scope, evidence, unresolved questions, risk, and recommended next tier. Do not repeat the same work in both lanes.
 
 During execution, escalate on newly discovered cross-cutting impact, failed assumptions, nondeterminism, or inability to define a decisive test after one focused investigation cycle.
 
-The orchestrator stays on Sol High and owns the specification, routing, synthesis, and any materially different product or architecture decision.
+The orchestrator stays in the Sol family and owns the specification, routing, synthesis, and any materially different product or architecture decision. Use high reasoning only when consequential signals justify it.

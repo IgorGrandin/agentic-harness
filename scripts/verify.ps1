@@ -43,9 +43,12 @@ $secretPatterns = @(
     '(?im)^\s*(?:api[_-]?key|access[_-]?token|password|secret)\s*=\s*["''][^"''${}<>]{8,}["'']\s*$'
 )
 
-$files = Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Force | Where-Object {
-    $_.FullName -notmatch '[\\/](?:\.git|\.test-output|portable-backups)[\\/]'
-}
+$files = Get-ChildItem -LiteralPath $repoRoot -Force |
+    Where-Object { $_.Name -notin @('.git', '.test-output', 'portable-backups') } |
+    ForEach-Object {
+        if ($_.PSIsContainer) { Get-ChildItem -LiteralPath $_.FullName -Recurse -File -Force }
+        else { $_ }
+    }
 foreach ($file in $files) {
     $relative = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
     if ($relative -match $forbiddenPath) { $errors.Add("Forbidden local-state path: $relative") }
