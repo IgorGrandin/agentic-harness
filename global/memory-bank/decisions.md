@@ -30,7 +30,7 @@ Status: active
 
 Amended: 2026-08-21, based on observed overengineering in a bounded feature and successful simplification after reducing reasoning effort and clarifying non-goals.
 
-Decision: Scout, Implementer, Verifier, Reviewer, and Architect/Escalation are reusable activity roles. They do not encode a technology, fixed model, or fixed skill. The primary orchestrator stays in the Sol family with effort proportional to the task. Spawned agents default to Luna Medium, may rise to Luna Max for narrow reasoning-heavy work, and escalate to Terra High or Sol High when complexity warrants it.
+Decision: Scout, Implementer, Verifier, Reviewer, and Architect/Escalation are reusable activity roles. They do not encode a technology, fixed model, or fixed skill. The primary orchestrator stays in the Sol family with effort proportional to the task. Delegate to Luna Medium only when expected savings or context isolation outweigh handoff overhead; use Luna Max for narrow deep reasoning and escalate to Terra High or Sol High when complexity warrants it.
 
 Rationale: role describes responsibility, model describes required capability, and skill supplies task-specific procedure. Keeping these axes separate avoids an agent explosion and permits routing changes without rewriting role definitions.
 
@@ -49,14 +49,6 @@ Status: active
 Decision: V1 runs at most three subagents concurrently. The router parallelizes only independent tasks with a material latency or context-isolation gain. Dependencies remain sequential. Concurrent writers require separate Git worktrees, non-overlapping ownership, and sequential integration.
 
 Rationale: bounded concurrency supports early evaluation while avoiding speculative fan-out, shared-worktree conflicts, and unnecessary token use.
-
-## 2026-08-26 — Close subagent work at lifecycle boundaries
-
-Status: active
-
-Decision: close completed threads after consuming their result; at handoff leave no active or idle agents except explicit monitoring. After two consecutive no-progress windows totaling 10 minutes, inspect once and interrupt/close if complete, redundant, or stuck.
-
-Rationale: explicit lifecycle cleanup prevents resource leakage without preserving threads solely for history.
 
 ## 2026-08-21 — Version the portable global configuration privately
 

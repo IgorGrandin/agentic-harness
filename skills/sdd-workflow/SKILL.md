@@ -12,7 +12,7 @@ Turn the request and repository evidence into the smallest reviewable Markdown s
 1. Read applicable `AGENTS.md` files. Inspect only the project docs needed to understand the requested surface.
 2. Choose a processing lane before expanding the workflow:
    - **Microtask fast lane:** explicit, local, low-risk work that needs at most one targeted inspection, one small edit, and one focused check. Use the request as the source of truth; do not create a spec, plan, architecture comparison, subagent, or routing log.
-   - **Bounded lane:** clear, low-risk work larger than a microtask. Delegate execution to one sequential Luna Medium worker using [references/subagent-orchestration.md](references/subagent-orchestration.md).
+   - **Bounded lane:** clear, low-risk work larger than a microtask. Execute directly with proportional reasoning or delegate to Luna Medium only when expected token/context savings exceed spawn and synthesis overhead.
    - **Consequential lane:** ambiguity, cross-cutting impact, costly verification, or material risk. Use the full lifecycle and the routing rubric.
 3. If evidence exceeds the current lane, reclassify before further implementation. Do not finish a larger task under a cheaper lane merely because execution has started.
 4. Outside the microtask fast lane, classify the task as bug, feature, discovery, refactor, or review and read only the matching workflow reference:

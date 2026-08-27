@@ -38,10 +38,9 @@ Maintain a private, reviewable Git repository containing only portable Codex con
 - **AC-06:** Documentation explains first installation, routine pull/export/push usage, recovery, and exclusions.
 - **AC-07:** The repository is initialized locally and published to a private GitHub repository when authenticated GitHub creation is available.
 - **AC-08:** Genuine microtasks use a direct one-pass fast lane with no spec, plan, subagent, routing log, or redundant verification.
-- **AC-09:** Bounded work larger than a microtask defaults to one sequential Luna Medium worker even when parallelism offers no benefit; Luna Max is a narrow reasoning escalation.
+- **AC-09:** Delegation occurs only when expected token, context, verification, or latency gains exceed spawn and synthesis overhead; Luna Max remains a narrow reasoning escalation.
 - **AC-10:** Low-risk work uses the smallest decisive check, does not repeat passing checks without relevant changes, and does not add separate verification or review agents by default.
 - **AC-11:** Features and architecture decisions prefer existing extension points and the smallest sufficient change surface; speculative infrastructure requires an explicit present requirement.
-- **AC-12:** Subagent lifecycle closes completed work promptly, leaves no active or idle agents at handoff except explicit monitoring, and stops no-progress threads after one inspection following two consecutive windows totaling 10 minutes.
 
 ## Verification strategy
 
@@ -58,8 +57,7 @@ Maintain a private, reviewable Git repository containing only portable Codex con
 - Git is the synchronization mechanism; updates are explicit rather than background-driven.
 - The repository stores a sanitized routing fragment instead of the full local `config.toml`.
 - Custom skills are synchronized from an explicit manifest rather than copying system or plugin caches.
-- Delegation and parallelism are independent decisions: bounded work is normally delegated serially, while parallelism remains opt-in through the router.
+- Delegation and parallelism are independent, opt-in decisions justified by expected net gain.
 - Luna Medium is the configured bounded-worker default. Luna Max is explicit escalation for narrow reasoning-heavy work; Terra High and Sol High handle broader or consequential complexity.
 - Reasoning effort is proportional rather than fixed: Sol Low for microtasks, Sol Medium for clear bounded intake and synthesis, and Sol High for consequential work.
 - Existing extension points and the smallest sufficient change surface take precedence over speculative abstractions or future-proofing.
-- Completed or redundant subagent threads are closed promptly; handoffs leave no idle agents unless monitoring is explicit.

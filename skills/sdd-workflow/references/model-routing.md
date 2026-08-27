@@ -6,7 +6,7 @@ Role, model, and skill are independent axes:
 - Model answers how much capability the task needs.
 - Skill answers which task-specific procedure should be loaded.
 
-Choose the processing lane before the model tier. Sequential execution can still be delegated; lack of parallel work does not make implementation an orchestrator responsibility.
+Choose the processing lane before the model tier. Delegation is justified by expected net savings or useful context isolation, not merely because work exceeds the microtask budget.
 
 ## Microtask direct-execution exception
 
@@ -47,7 +47,7 @@ Choose GPT-5.6 Luna with medium reasoning when the task is low risk, tightly bou
 
 Luna must not begin implementation merely to discover that the task is complex.
 
-For work in this lane that is larger than a microtask, the Sol orchestrator spawns one Luna Medium worker and waits sequentially. Sol must not absorb the implementation merely because parallelism provides no benefit. The Luna worker performs the smallest decisive verification and returns summarized evidence; Sol does not repeat a passing check unless relevant files or inputs changed afterward.
+For work in this lane, use Luna Medium only when cheaper execution or keeping noisy tool output out of the primary context is likely to recover spawn and synthesis overhead. Otherwise Sol executes directly with proportional reasoning. A worker performs the smallest decisive verification; Sol does not repeat it unless relevant files or inputs changed afterward.
 
 ## Luna Max — narrow reasoning escalation
 
