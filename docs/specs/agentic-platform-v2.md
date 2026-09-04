@@ -1,6 +1,6 @@
 # Provider-agnostic agentic platform V2
 
-Status: active
+Status: implemented
 
 ## Outcome
 
@@ -49,7 +49,7 @@ Rejected alternatives:
 4. Create the Assistant Profile and documented Antigravity Adapter using current official paths; always compose Knowledge and Home.
 5. Always install the Ollama adapter and Qwen 3.5 9B Modelfiles without installing the runtime or weights.
 6. Add Knowledge/Home policy scaffolding and shared capability registry.
-7. Verify materialization, allowlists, secrets boundary, default Codex installation, Antigravity smoke contract, and optional Ollama configuration.
+7. Verify materialization, allowlists, secrets boundary, global installation, Antigravity smoke contract, and versioned Ollama configuration.
 
 ## Acceptance criteria
 
@@ -59,6 +59,10 @@ The numbered acceptance criteria and non-goals in the user request are authorita
 - `export.ps1` never exports outside the explicit Codex allowlist.
 - Runtime binaries, credentials, external integrations, Ollama weights, and local model creation remain external.
 - Assistant, Knowledge, and Home are permanent profiles; their external integrations remain incremental.
+- Runtime adapters distinguish the complete profile inventory from profiles active in that runtime.
+- Codex knows the complete catalog while activating only Software; Antigravity knows the complete catalog while activating Assistant, Knowledge, and Home.
+- Antigravity distinguishes `DECLARED`, `ACTIVE`, `CONNECTED`, and `PLANNED` state and does not present planned integrations as operational facts.
+- Assistant routing classes do not imply fixed nominal model defaults, and Antigravity-to-Ollama fallback is not automatic in V2.
 - Core policy contains no Sol/Luna/Terra routing.
 - Knowledge changes require human review; bulk mutation is never automatic.
 - Home Assistant is the target source of truth; Alexa and Smart Life/Tuya remain interfaces or bridges.

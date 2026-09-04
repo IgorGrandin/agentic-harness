@@ -9,6 +9,8 @@
     "core/policies/session-lifecycle.md",
     "core/policies/evidence.md",
     "core/policies/security-permissions.md",
+    "profiles/catalog.md",
+    "memory/domains.md",
     "profiles/software/PROFILE.md",
     "adapters/codex/runtime.md"
   ],

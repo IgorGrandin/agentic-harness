@@ -53,6 +53,18 @@ Assert-SameFile -Expected (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-l
 Assert-SameFile -Expected (Join-Path $repoRoot 'mcp\registry.json') -Actual (Join-Path $testHarnessHome 'mcp\registry.json')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testHarnessHome 'global\memory-bank\INDEX.md')
 
+$codexInstructions = Get-Content -Raw -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
+foreach ($marker in @(
+    'four permanent profiles',
+    'This Codex adapter activates Software',
+    'Assistant, Knowledge, and Home remain known platform profiles but are not activated',
+    '`CONNECTED` through `~/.codex/memory-bank/`',
+    'Sol, Luna, and Terra are `CONFIGURED`',
+    'not an automatic Codex fallback'
+)) {
+    if (-not $codexInstructions.Contains($marker)) { throw "Codex platform-awareness contract missing: $marker" }
+}
+
 $antigravityRules = Get-Content -Raw -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md')
 foreach ($marker in @('Personal Assistant Profile', 'Knowledge / Second Brain Profile', 'Home Profile')) {
     if (-not $antigravityRules.Contains($marker)) { throw "Global Antigravity composition missing: $marker" }

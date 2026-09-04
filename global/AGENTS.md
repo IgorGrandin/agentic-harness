@@ -56,6 +56,40 @@
 - A diagnostic or review request authorizes inspection and reporting, not implementation.
 - Stop when the authorized outcome is met; unrelated cleanup and speculative hardening require separate authorization.
 
+# Platform profile catalog and operational state
+
+The harness declares four permanent profiles:
+
+- Software: software engineering, active primarily through Codex.
+- Assistant: general personal assistance, active primarily through Antigravity.
+- Knowledge: Markdown-first second brain with Obsidian as its source-of-truth boundary, composed with Assistant.
+- Home: residential automation with Home Assistant as its target source-of-truth boundary, composed with Assistant.
+
+When asked for the platform inventory, name all four profiles and distinguish profiles declared by the harness from profiles active in the current runtime. Knowing that a profile exists does not activate its behavior, load its skills, grant access to capabilities, or connect an external service.
+
+Use these operational-state terms precisely:
+
+- `DECLARED`: present in the versioned harness.
+- `ACTIVE`: included in the current runtime instructions.
+- `CONNECTED`: an external tool, memory source, runtime, or service is configured and its availability has been verified.
+- `PLANNED`: designed but not operationally connected.
+
+For model claims, also distinguish `CONFIGURED` from `AVAILABLE` and `SELECTED`. A model named in routing policy is not necessarily available in the current runtime or selected for the current task. Never present declared architecture, routing intent, or planned integration as observed operational state.
+
+# Memory domain boundaries
+
+The existing `global/memory-bank/` remains the shared, cross-profile memory bank and keeps its index-first structure unchanged.
+
+| Domain | Durable memory owner | Versioning rule |
+|---|---|---|
+| Shared/global | `global/memory-bank/` | only cross-profile facts, preferences, decisions, and confirmed lessons |
+| Software | each software repository | architecture, commands, active specs, and project decisions stay with the project |
+| Assistant | a future explicitly configured assistant memory source | stable non-sensitive preferences and routines only |
+| Knowledge | the Obsidian vault | personal knowledge remains in the vault, not copied into this repository |
+| Home | Home Assistant plus bounded documentation | safe conceptual configuration only; never credentials, access data, or household secrets |
+
+Conversation history remains working memory in every runtime. Discovery of a memory source does not load it automatically.
+
 ## Software Engineering Profile
 
 Runtime baseline: Codex.
@@ -99,3 +133,16 @@ Runtime baseline: Codex.
 - Discover reusable role definitions from `~/.codex/agents/` and shared skills from `~/.agents/skills/`.
 - Treat repository `AGENTS.md` files as the project-specific instruction layer.
 - Keep Codex routing configuration in the allowlisted `[agents]` fragment installed by this repository.
+
+### Runtime activation and current state
+
+- This Codex adapter activates Software. Assistant, Knowledge, and Home remain known platform profiles but are not activated by this adapter.
+- The shared/global Markdown memory bank is `CONNECTED` through `~/.codex/memory-bank/` after installation.
+- Software project memory is `CONNECTED` only when the current repository provides the relevant Markdown sources and they are loaded for the task.
+- The Assistant durable-memory source, Obsidian integration, Home Assistant integration, and automatic Codex-to-Ollama routing remain `PLANNED` unless current evidence proves otherwise.
+
+### Model names and routing
+
+- Sol, Luna, and Terra are `CONFIGURED` names in the Software Profile routing policy.
+- Do not claim that a configured model is `AVAILABLE` or `SELECTED` without current runtime evidence.
+- Qwen through Ollama is a declared local route for appropriate work, not an automatic Codex fallback in this V2.

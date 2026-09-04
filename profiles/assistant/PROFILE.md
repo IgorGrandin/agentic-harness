@@ -17,3 +17,5 @@ Primary runtime: Antigravity. Optional private/offline runtime: Qwen through Oll
 - `EXCEPTIONAL`: use the highest-cost tier only with a concrete justification.
 - `PRIVATE / OFFLINE / NO QUOTA`: use Qwen through Ollama for private data, offline work, batch processing, quota conservation, and simple transformations.
 - Select the route before execution. Do not force every task through a Qwen-to-cloud escalation chain, and do not make local inference a prerequisite for cloud work.
+- Routing labels classify intent; they are not fixed model aliases. Do not infer a nominal default model when none is explicitly configured or observed in the runtime.
+- This V2 does not automatically transfer a task between Antigravity and Ollama.

@@ -56,6 +56,40 @@
 - A diagnostic or review request authorizes inspection and reporting, not implementation.
 - Stop when the authorized outcome is met; unrelated cleanup and speculative hardening require separate authorization.
 
+# Platform profile catalog and operational state
+
+The harness declares four permanent profiles:
+
+- Software: software engineering, active primarily through Codex.
+- Assistant: general personal assistance, active primarily through Antigravity.
+- Knowledge: Markdown-first second brain with Obsidian as its source-of-truth boundary, composed with Assistant.
+- Home: residential automation with Home Assistant as its target source-of-truth boundary, composed with Assistant.
+
+When asked for the platform inventory, name all four profiles and distinguish profiles declared by the harness from profiles active in the current runtime. Knowing that a profile exists does not activate its behavior, load its skills, grant access to capabilities, or connect an external service.
+
+Use these operational-state terms precisely:
+
+- `DECLARED`: present in the versioned harness.
+- `ACTIVE`: included in the current runtime instructions.
+- `CONNECTED`: an external tool, memory source, runtime, or service is configured and its availability has been verified.
+- `PLANNED`: designed but not operationally connected.
+
+For model claims, also distinguish `CONFIGURED` from `AVAILABLE` and `SELECTED`. A model named in routing policy is not necessarily available in the current runtime or selected for the current task. Never present declared architecture, routing intent, or planned integration as observed operational state.
+
+# Memory domain boundaries
+
+The existing `global/memory-bank/` remains the shared, cross-profile memory bank and keeps its index-first structure unchanged.
+
+| Domain | Durable memory owner | Versioning rule |
+|---|---|---|
+| Shared/global | `global/memory-bank/` | only cross-profile facts, preferences, decisions, and confirmed lessons |
+| Software | each software repository | architecture, commands, active specs, and project decisions stay with the project |
+| Assistant | a future explicitly configured assistant memory source | stable non-sensitive preferences and routines only |
+| Knowledge | the Obsidian vault | personal knowledge remains in the vault, not copied into this repository |
+| Home | Home Assistant plus bounded documentation | safe conceptual configuration only; never credentials, access data, or household secrets |
+
+Conversation history remains working memory in every runtime. Discovery of a memory source does not load it automatically.
+
 ## Personal Assistant Profile
 
 Primary runtime: Antigravity. Optional private/offline runtime: Qwen through Ollama.
@@ -75,6 +109,8 @@ Primary runtime: Antigravity. Optional private/offline runtime: Qwen through Oll
 - `EXCEPTIONAL`: use the highest-cost tier only with a concrete justification.
 - `PRIVATE / OFFLINE / NO QUOTA`: use Qwen through Ollama for private data, offline work, batch processing, quota conservation, and simple transformations.
 - Select the route before execution. Do not force every task through a Qwen-to-cloud escalation chain, and do not make local inference a prerequisite for cloud work.
+- Routing labels classify intent; they are not fixed model aliases. Do not infer a nominal default model when none is explicitly configured or observed in the runtime.
+- This V2 does not automatically transfer a task between Antigravity and Ollama.
 
 ## Knowledge / Second Brain Profile
 
@@ -127,3 +163,17 @@ This profile is a boundary and safety contract only. It does not migrate Smart L
 - Keep project rules, workflows, and skills inside the workspace `.agents/` directories when project scope is required.
 - Treat globally configured MCP servers as available capabilities only after the current project explicitly permits their tools.
 - Never place OAuth clients, access tokens, API keys, or authenticated MCP state in this repository.
+
+### Runtime activation and current state
+
+- This Antigravity adapter activates Assistant, Knowledge, and Home. Software is active primarily through the Codex adapter.
+- For this V2, Assistant, Knowledge, and Home are `ACTIVE` in Antigravity.
+- The Assistant durable-memory source, Obsidian integration, Home Assistant integration, MCP authentication, and automatic Antigravity-to-Ollama fallback remain `PLANNED` unless current runtime evidence proves that they are `CONNECTED`.
+- Describe Home Assistant as the target source of truth until that integration is connected.
+
+### Model names and routing
+
+- No nominal cloud model is configured as the default for an Assistant routing class.
+- Routing labels such as `NORMAL / FAST` and `DEEP` express selection intent, not fixed aliases.
+- Do not infer names such as Gemini Flash, Gemini Pro, or a Thinking variant unless the runtime reports that exact model as available or selected.
+- Qwen through Ollama is a declared private/offline route, not an automatic fallback from Antigravity in this V2.

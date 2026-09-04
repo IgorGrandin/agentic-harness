@@ -37,6 +37,8 @@ These boundaries are deliberately distinct:
 - **Tool/MCP**: shared external capability, independently permissioned by profiles.
 - **Memory**: durable domain-owned Markdown; conversation history is working memory.
 
+Every runtime projection receives the complete four-profile catalog, then activates only the profiles assigned to that adapter. Catalog visibility does not load another profile's skills or grant access to its tools, memory, or external services.
+
 ## Repository layout
 
 ```text
@@ -104,6 +106,8 @@ pwsh -File .\scripts\install.ps1
 ```
 
 Applying this adapter means writing the global `GEMINI.md`; it does not install or launch Antigravity, copy software-only skills into it, create MCP servers, select cloud models, or write credentials. Configure MCP and authentication separately using the official runtime UI/configuration. Older official examples mention alternate skill paths; the documented adapter decision is in `adapters/antigravity/README.md`.
+
+Antigravity knows the complete profile inventory but activates only Assistant, Knowledge, and Home. Runtime instructions distinguish declared, active, connected, and planned state. Routing classes do not name fixed default models, and Qwen/Ollama is not an automatic fallback in V2.
 
 ## Ollama/Qwen adapter
 

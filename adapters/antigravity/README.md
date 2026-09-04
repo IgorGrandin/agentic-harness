@@ -28,3 +28,5 @@ pwsh -File .\scripts\install.ps1
 ```
 
 For Antigravity, the installer writes only `GEMINI.md`. It does not install or launch the runtime, invent MCP servers, choose models, or install credentials. Configure and authenticate MCP servers separately in Antigravity, then allow only the tools required by each project.
+
+The adapter exposes the complete four-profile inventory while activating only Assistant, Knowledge, and Home. It distinguishes `DECLARED`, `ACTIVE`, `CONNECTED`, and `PLANNED` state, and it forbids treating routing classes as fixed model names. Qwen/Ollama remains a declared route rather than an automatic fallback.

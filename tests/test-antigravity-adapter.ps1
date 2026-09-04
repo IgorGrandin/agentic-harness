@@ -41,7 +41,26 @@ if ($expectedHash -ne $actualHash) { throw 'Installed Antigravity base rules dif
 if (-not (Test-Path -LiteralPath (Join-Path $harnessHome 'profiles\software\PROFILE.md'))) { throw 'Shared harness was not installed.' }
 
 $content = Get-Content -Raw -LiteralPath $installed
-foreach ($marker in @('Windows 11', 'PowerShell', 'OBSERVED FACT', 'PRIVILEGED / DESTRUCTIVE', 'Inspect before modifying', 'Knowledge / Second Brain Profile', 'Home Profile', 'HUMAN REVIEW', 'STRONG CONFIRMATION')) {
+foreach ($marker in @(
+    'Windows 11',
+    'PowerShell',
+    'OBSERVED FACT',
+    'PRIVILEGED / DESTRUCTIVE',
+    'Inspect before modifying',
+    'Knowledge / Second Brain Profile',
+    'Home Profile',
+    'HUMAN REVIEW',
+    'STRONG CONFIRMATION',
+    'four permanent profiles',
+    'This Antigravity adapter activates Assistant, Knowledge, and Home',
+    '`DECLARED`',
+    '`ACTIVE`',
+    '`CONNECTED`',
+    '`PLANNED`',
+    'No nominal cloud model is configured as the default',
+    'not an automatic fallback from Antigravity',
+    'a future explicitly configured assistant memory source'
+)) {
     if (-not $content.Contains($marker)) { throw "Antigravity smoke contract missing: $marker" }
 }
 

@@ -7,6 +7,7 @@
     "security-permissions.md"
   ],
   "profileFiles": [
+    "catalog.md",
     "software/PROFILE.md",
     "assistant/PROFILE.md",
     "knowledge/PROFILE.md",
