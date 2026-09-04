@@ -14,7 +14,26 @@ catch { $errors.Add("Invalid portable-manifest.json: $($_.Exception.Message)"); 
 $required = @(
     'README.md',
     'global\AGENTS.md',
+    'core\policies\context-memory.md',
+    'core\policies\session-lifecycle.md',
+    'core\policies\evidence.md',
+    'core\policies\security-permissions.md',
+    'profiles\software\PROFILE.md',
+    'profiles\assistant\PROFILE.md',
+    'profiles\knowledge\PROFILE.md',
+    'profiles\home\PROFILE.md',
+    'profiles\registry.json',
+    'adapters\codex\adapter.json',
+    'adapters\antigravity\adapter.json',
+    'adapters\antigravity\GEMINI.md',
+    'adapters\ollama\adapter.json',
+    'adapters\ollama\Modelfile.qwen-local',
+    'adapters\ollama\Modelfile.qwen-local-deep',
+    'mcp\registry.json',
+    'memory\domains.md',
     'config\agents.toml',
+    'scripts\adapter-tools.ps1',
+    'scripts\materialize.ps1',
     'scripts\install.ps1',
     'scripts\export.ps1',
     'scripts\verify.ps1'
@@ -24,6 +43,28 @@ foreach ($relative in $required) {
 }
 
 if ($null -ne $manifest) {
+    if ($manifest.schemaVersion -ne 3) { $errors.Add("Unsupported manifest schema version: $($manifest.schemaVersion)") }
+    foreach ($name in $manifest.corePolicyFiles) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "core\policies\$name"))) { $errors.Add("Missing core policy: $name") }
+    }
+    foreach ($name in $manifest.profileFiles) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "profiles\$name"))) { $errors.Add("Missing profile file: $name") }
+    }
+    foreach ($name in $manifest.adapterManifests) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "adapters\$name"))) { $errors.Add("Missing adapter manifest: $name") }
+    }
+    foreach ($name in $manifest.harnessInstall.directories) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $name) -PathType Container)) { $errors.Add("Missing platform directory: $name") }
+    }
+    foreach ($name in $manifest.harnessInstall.files) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $name) -PathType Leaf)) { $errors.Add("Missing platform file: $name") }
+    }
+    foreach ($adapterName in @('codex', 'antigravity')) {
+        $adapterManifest = Get-Content -Raw -LiteralPath (Join-Path $repoRoot "adapters\$adapterName\adapter.json") | ConvertFrom-Json
+        if ($adapterManifest.installMode -ne 'always') { $errors.Add("Adapter '$adapterName' is not configured for global installation.") }
+    }
+    $ollamaManifest = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'adapters\ollama\adapter.json') | ConvertFrom-Json
+    if ($ollamaManifest.installMode -ne 'always-versioned') { $errors.Add('Ollama adapter is not configured for versioned global installation.') }
     foreach ($name in $manifest.memoryFiles) {
         if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "global\memory-bank\$name"))) { $errors.Add("Missing memory file: $name") }
     }
@@ -35,7 +76,7 @@ if ($null -ne $manifest) {
     }
 }
 
-$forbiddenPath = '(?i)(^|[\\/])(auth\.json|sessions|cache|attachments|\.sandbox|\.sandbox-secrets)([\\/]|$)|\.sqlite(?:-(?:shm|wal))?$|\.jsonl$|installation_id$|\.codex-global-state\.json'
+$forbiddenPath = '(?i)(^|[\\/])(auth\.json|sessions|cache|attachments|browser-state|\.sandbox|\.sandbox-secrets|models[\\/]blobs)([\\/]|$)|\.sqlite(?:-(?:shm|wal))?$|\.jsonl$|installation_id$|\.codex-global-state\.json|\.(?:gguf|safetensors)$'
 $secretPatterns = @(
     '(?i)github_pat_[A-Za-z0-9_]{20,}',
     '(?i)gh[pousr]_[A-Za-z0-9]{20,}',
@@ -61,12 +102,57 @@ foreach ($file in $files) {
     }
 }
 
-foreach ($script in (Get-ChildItem -LiteralPath (Join-Path $repoRoot 'scripts') -Filter '*.ps1' -File)) {
+foreach ($jsonFile in ($files | Where-Object { $_.Extension -eq '.json' })) {
+    try { [void](Get-Content -Raw -LiteralPath $jsonFile.FullName | ConvertFrom-Json) }
+    catch { $relative = $jsonFile.FullName.Substring($repoRoot.Length).TrimStart('\', '/'); $errors.Add("Invalid JSON in ${relative}: $($_.Exception.Message)") }
+}
+
+foreach ($script in (Get-ChildItem -LiteralPath $repoRoot -Filter '*.ps1' -File -Recurse | Where-Object { $_.FullName -notmatch '\\.test-output\\' })) {
     $tokens = $null
     $parseErrors = $null
     [void][Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$parseErrors)
     foreach ($parseError in $parseErrors) { $errors.Add("PowerShell syntax error in $($script.Name): $($parseError.Message)") }
 }
+
+. (Join-Path $PSScriptRoot 'adapter-tools.ps1')
+foreach ($adapterName in @('Codex', 'Antigravity')) {
+    try {
+        $adapter = Get-AdapterManifest -RepositoryRoot $repoRoot -Adapter $adapterName
+        $expected = Get-AdapterInstructionContent -RepositoryRoot $repoRoot -AdapterManifest $adapter
+        $output = Resolve-RepositoryPath -RepositoryRoot $repoRoot -RelativePath $adapter.instructionOutput
+        if (-not (Test-Path -LiteralPath $output -PathType Leaf)) { $errors.Add("Missing materialized $adapterName instructions: $($adapter.instructionOutput)"); continue }
+        $actual = Get-Content -Raw -LiteralPath $output
+        if ($actual -ne $expected) { $errors.Add("Materialized $adapterName instructions are stale. Run scripts/materialize.ps1.") }
+    }
+    catch { $errors.Add("Invalid $adapterName adapter: $($_.Exception.Message)") }
+}
+
+$coreContent = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'core\policies') -Filter '*.md' -File |
+    ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }
+if (($coreContent -join "`n") -match '(?i)\b(?:Sol|Luna|Terra|Codex|Antigravity|Ollama|Qwen)\b') {
+    $errors.Add('Universal Core policies contain runtime- or model-specific routing.')
+}
+
+try {
+    $profiles = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'profiles\registry.json') | ConvertFrom-Json
+    $capabilities = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'mcp\registry.json') | ConvertFrom-Json
+    foreach ($profileProperty in $profiles.profiles.PSObject.Properties) {
+        if ($profileProperty.Value.required -ne $true) { $errors.Add("Profile '$($profileProperty.Name)' is not declared as a permanent harness profile.") }
+        foreach ($capability in $profileProperty.Value.capabilities) {
+            $capabilityProperty = $capabilities.capabilities.PSObject.Properties[$capability]
+            if ($null -eq $capabilityProperty) { $errors.Add("Profile '$($profileProperty.Name)' declares unknown capability '$capability'."); continue }
+            if ($profileProperty.Name -notin $capabilityProperty.Value.allowedProfiles) {
+                $errors.Add("Capability '$capability' does not allow declared profile '$($profileProperty.Name)'.")
+            }
+        }
+    }
+}
+catch { $errors.Add("Invalid profile/capability registry: $($_.Exception.Message)") }
+
+$fastModel = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-local')
+$deepModel = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-local-deep')
+if ($fastModel -notmatch '(?m)^FROM qwen3\.5:9b\s*$' -or $fastModel -notmatch '(?m)^PARAMETER num_ctx 8192\s*$') { $errors.Add('Invalid qwen-local Modelfile.') }
+if ($deepModel -notmatch '(?m)^FROM qwen3\.5:9b\s*$' -or $deepModel -notmatch '(?m)^PARAMETER num_ctx 16384\s*$') { $errors.Add('Invalid qwen-local-deep Modelfile.') }
 
 $agentConfig = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'config\agents.toml')
 foreach ($expected in @('max_concurrent_threads_per_session', 'enabled', 'default_subagent_model', 'default_subagent_reasoning_effort', 'interrupt_message')) {

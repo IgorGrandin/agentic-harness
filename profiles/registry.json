@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "profiles": {
+    "software": {
+      "required": true,
+      "primaryRuntime": "codex",
+      "capabilities": ["github", "jira"],
+      "skills": [
+        "api-contract-review",
+        "database-change-safety",
+        "frontend-design",
+        "repo-aware-architecture",
+        "sdd-workflow",
+        "systematic-debugging",
+        "ui-ux-quality-review"
+      ]
+    },
+    "assistant": {
+      "required": true,
+      "primaryRuntime": "antigravity",
+      "fallbackRuntime": "ollama",
+      "capabilities": ["windows", "google", "home-assistant"],
+      "skills": []
+    },
+    "knowledge": {
+      "required": true,
+      "composesWith": "assistant",
+      "capabilities": ["obsidian", "google"],
+      "skills": []
+    },
+    "home": {
+      "required": true,
+      "composesWith": "assistant",
+      "capabilities": ["home-assistant"],
+      "skills": []
+    }
+  }
+}

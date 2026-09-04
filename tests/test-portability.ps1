@@ -14,6 +14,8 @@ if (-not $testRoot.StartsWith($allowedPrefix, [StringComparison]::OrdinalIgnoreC
 if (Test-Path -LiteralPath $testRoot) { Remove-Item -LiteralPath $testRoot -Recurse -Force }
 $testCodexHome = Join-Path $testRoot 'codex-home'
 $testAgentsHome = Join-Path $testRoot 'agents-home'
+$testHarnessHome = Join-Path $testRoot 'harness-home'
+$testGeminiHome = Join-Path $testRoot 'gemini-home'
 New-Item -ItemType Directory -Force -Path (Join-Path $testCodexHome 'memory-bank'), (Join-Path $testAgentsHome 'skills') | Out-Null
 
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'fixtures\existing-config.toml') -Destination (Join-Path $testCodexHome 'config.toml')
@@ -22,11 +24,14 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'fixtures\existing-config.toml')
 [IO.File]::WriteAllText((Join-Path $testCodexHome 'auth.json'), '{"must":"stay local"}', [Text.UTF8Encoding]::new($false))
 
 $beforeWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome -WhatIf 6>$null
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -WhatIf 6>$null
 $afterWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
 if ($beforeWhatIf.Hash -ne $afterWhatIf.Hash) { throw '-WhatIf mutated AGENTS.md.' }
+if (Test-Path -LiteralPath $testHarnessHome) { throw '-WhatIf created the global harness home.' }
+if (Test-Path -LiteralPath $testGeminiHome) { throw '-WhatIf created the Antigravity home.' }
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome
+if (-not (Test-Path -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md') -PathType Leaf)) { throw 'Global install did not apply the Antigravity adapter.' }
 
 function Assert-SameFile {
     param([string]$Expected, [string]$Actual)
@@ -40,6 +45,18 @@ Assert-SameFile -Expected (Join-Path $repoRoot 'global\AGENTS.md') -Actual (Join
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testCodexHome 'memory-bank\INDEX.md')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\agents\scout.toml') -Actual (Join-Path $testCodexHome 'agents\scout.toml')
 Assert-SameFile -Expected (Join-Path $repoRoot 'skills\sdd-workflow\SKILL.md') -Actual (Join-Path $testAgentsHome 'skills\sdd-workflow\SKILL.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'core\policies\context-memory.md') -Actual (Join-Path $testHarnessHome 'core\policies\context-memory.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'profiles\assistant\PROFILE.md') -Actual (Join-Path $testHarnessHome 'profiles\assistant\PROFILE.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'profiles\knowledge\PROFILE.md') -Actual (Join-Path $testHarnessHome 'profiles\knowledge\PROFILE.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'profiles\home\PROFILE.md') -Actual (Join-Path $testHarnessHome 'profiles\home\PROFILE.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-local') -Actual (Join-Path $testHarnessHome 'adapters\ollama\Modelfile.qwen-local')
+Assert-SameFile -Expected (Join-Path $repoRoot 'mcp\registry.json') -Actual (Join-Path $testHarnessHome 'mcp\registry.json')
+Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testHarnessHome 'global\memory-bank\INDEX.md')
+
+$antigravityRules = Get-Content -Raw -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md')
+foreach ($marker in @('Personal Assistant Profile', 'Knowledge / Second Brain Profile', 'Home Profile')) {
+    if (-not $antigravityRules.Contains($marker)) { throw "Global Antigravity composition missing: $marker" }
+}
 
 $mergedConfig = Get-Content -Raw -LiteralPath (Join-Path $testCodexHome 'config.toml')
 foreach ($requiredText in @(
@@ -61,7 +78,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $backups[0].FullName 'AGENTS.md'))) 
 
 $tempBase = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
 $exportRepoParent = Join-Path $tempBase ("codex-portability-test-" + [Guid]::NewGuid().ToString('N'))
-$exportRepo = Join-Path $exportRepoParent 'codex-global-config'
+$exportRepo = Join-Path $exportRepoParent 'agentic-harness'
 $tempPrefix = $tempBase + [IO.Path]::DirectorySeparatorChar
 if (-not ([IO.Path]::GetFullPath($exportRepoParent)).StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) {
     throw "Unsafe export test root: $exportRepoParent"

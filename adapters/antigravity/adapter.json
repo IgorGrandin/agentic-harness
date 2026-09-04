@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "antigravity",
+  "installMode": "always",
+  "instructionOutput": "adapters/antigravity/GEMINI.md",
+  "instructionSources": [
+    "adapters/antigravity/header.md",
+    "core/policies/context-memory.md",
+    "core/policies/session-lifecycle.md",
+    "core/policies/evidence.md",
+    "core/policies/security-permissions.md",
+    "profiles/assistant/PROFILE.md",
+    "profiles/knowledge/PROFILE.md",
+    "profiles/knowledge/workflows/vault-organization.md",
+    "profiles/home/PROFILE.md",
+    "adapters/antigravity/runtime.md"
+  ],
+  "officialPaths": {
+    "globalRules": "~/.gemini/GEMINI.md",
+    "globalSkills": "~/.gemini/config/skills/",
+    "globalMcp": "~/.gemini/config/mcp_config.json",
+    "workspaceRules": ".agents/rules/",
+    "workspaceWorkflows": ".agents/workflows/",
+    "workspaceSkills": ".agents/skills/"
+  }
+}

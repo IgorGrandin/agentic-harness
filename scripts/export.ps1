@@ -15,6 +15,7 @@ $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $manifest = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'portable-manifest.json') | ConvertFrom-Json
 $codexRoot = [IO.Path]::GetFullPath($CodexHome)
 $agentsRoot = [IO.Path]::GetFullPath($AgentsHome)
+. (Join-Path $PSScriptRoot 'adapter-tools.ps1')
 
 function Assert-RepositoryPath {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -46,7 +47,15 @@ function Export-Directory {
     }
 }
 
-Export-File -Source (Join-Path $codexRoot 'AGENTS.md') -Target (Join-Path $repoRoot 'global\AGENTS.md')
+$codexAdapter = Get-AdapterManifest -RepositoryRoot $repoRoot -Adapter 'Codex'
+$expectedAgents = Get-AdapterInstructionContent -RepositoryRoot $repoRoot -AdapterManifest $codexAdapter
+$localAgentsPath = Join-Path $codexRoot 'AGENTS.md'
+if (-not (Test-Path -LiteralPath $localAgentsPath -PathType Leaf)) { throw "Missing local file: $localAgentsPath" }
+$localAgents = Get-Content -Raw -LiteralPath $localAgentsPath
+if ($localAgents -ne $expectedAgents) {
+    throw 'The installed Codex AGENTS.md differs from its Core/Profile/Adapter sources. Update the source Markdown and run materialize.ps1 instead of exporting the generated file.'
+}
+Export-File -Source $localAgentsPath -Target (Join-Path $repoRoot 'global\AGENTS.md')
 
 foreach ($memoryFile in $manifest.memoryFiles) {
     Export-File -Source (Join-Path $codexRoot "memory-bank\$memoryFile") -Target (Join-Path $repoRoot "global\memory-bank\$memoryFile")

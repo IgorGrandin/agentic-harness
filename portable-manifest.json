@@ -1,5 +1,44 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
+  "corePolicyFiles": [
+    "context-memory.md",
+    "session-lifecycle.md",
+    "evidence.md",
+    "security-permissions.md"
+  ],
+  "profileFiles": [
+    "software/PROFILE.md",
+    "assistant/PROFILE.md",
+    "knowledge/PROFILE.md",
+    "knowledge/workflows/vault-organization.md",
+    "home/PROFILE.md"
+  ],
+  "adapterManifests": [
+    "codex/adapter.json",
+    "antigravity/adapter.json",
+    "ollama/adapter.json"
+  ],
+  "materializedInstructions": [
+    "global/AGENTS.md",
+    "adapters/antigravity/GEMINI.md"
+  ],
+  "capabilityRegistry": "mcp/registry.json",
+  "profileRegistry": "profiles/registry.json",
+  "harnessInstall": {
+    "directories": [
+      "core",
+      "profiles",
+      "adapters",
+      "mcp",
+      "memory",
+      "global",
+      "skills",
+      "config"
+    ],
+    "files": [
+      "portable-manifest.json"
+    ]
+  },
   "memoryFiles": [
     "INDEX.md",
     "preferences.md",

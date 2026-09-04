@@ -1,6 +1,6 @@
 # Portable global Codex configuration V1
 
-Status: active
+Status: compatibility baseline; architecture superseded by `agentic-platform-v2.md`
 
 ## Problem
 

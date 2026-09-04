@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "id": "ollama",
+  "installMode": "always-versioned",
+  "baseModel": "qwen3.5:9b",
+  "models": {
+    "qwen-local": "adapters/ollama/Modelfile.qwen-local",
+    "qwen-local-deep": "adapters/ollama/Modelfile.qwen-local-deep"
+  }
+}

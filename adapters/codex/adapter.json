@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "codex",
+  "installMode": "always",
+  "instructionOutput": "global/AGENTS.md",
+  "instructionSources": [
+    "adapters/codex/header.md",
+    "core/policies/context-memory.md",
+    "core/policies/session-lifecycle.md",
+    "core/policies/evidence.md",
+    "core/policies/security-permissions.md",
+    "profiles/software/PROFILE.md",
+    "adapters/codex/runtime.md"
+  ],
+  "destinations": {
+    "instructions": "~/.codex/AGENTS.md",
+    "memory": "~/.codex/memory-bank/",
+    "agents": "~/.codex/agents/",
+    "skills": "~/.agents/skills/",
+    "routing": "~/.codex/config.toml [agents]"
+  }
+}

@@ -4,7 +4,7 @@ portable-backups/
 *.bak
 *.tmp
 
-# Never allow local Codex state or credentials into this repository
+# Never allow local runtime state or credentials into this repository
 auth.json
 **/auth.json
 sessions/
@@ -19,3 +19,13 @@ installation_id
 .sandbox-secrets/
 cache/
 attachments/
+browser-state/
+credentials.json
+token.json
+.env
+.env.*
+*.pem
+*.pfx
+*.key
+*.gguf
+*.safetensors
