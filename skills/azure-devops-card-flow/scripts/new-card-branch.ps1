@@ -38,7 +38,8 @@ if (-not $ownerSlug -or -not $prefixSlug) { throw 'Owner and prefix must produce
 $branch = "$prefixSlug/$ownerSlug/$suffix"
 if ($NameOnly) { Write-Output $branch; return }
 
-$root = [IO.Path]::GetFullPath($RepositoryRoot)
+$root = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($RepositoryRoot)
+$root = [IO.Path]::GetFullPath($root)
 if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { throw "Not a Git repository root: $root" }
 $changes = @(git -C $root status --porcelain)
 if ($LASTEXITCODE -ne 0) { throw 'Unable to read Git worktree status.' }
