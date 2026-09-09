@@ -1,11 +1,13 @@
 {
   "schemaVersion": 2,
   "profiles": {
-    "software": {
+    "coder": {
       "required": true,
-      "primaryRuntime": "codex",
-      "capabilities": ["github", "jira"],
+      "executors": ["cursor", "codex", "antigravity"],
+      "defaultExecutor": "cursor",
+      "capabilities": ["azure-devops", "github", "jira"],
       "skills": [
+        "azure-devops-card-flow",
         "api-contract-review",
         "database-change-safety",
         "frontend-design",

@@ -2,7 +2,7 @@
 
 The harness declares four permanent profiles:
 
-- Software: software engineering, active primarily through Codex.
+- Coder: software engineering role, executable by Cursor (default), Codex, or Antigravity.
 - Assistant: general personal assistance, active primarily through Antigravity.
 - Knowledge: Markdown-first second brain with Obsidian as its source-of-truth boundary, composed with Assistant.
 - Home: residential automation with Home Assistant as its target source-of-truth boundary, composed with Assistant.

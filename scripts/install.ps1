@@ -1,11 +1,12 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [ValidateSet('Platform', 'Codex', 'Antigravity', 'All')][string]$Runtime = 'All',
+    [ValidateSet('Platform', 'Codex', 'Cursor', 'Antigravity', 'All')][string]$Runtime = 'All',
     [string]$CodexHome = $(
         if ($env:CODEX_HOME) { $env:CODEX_HOME }
         else { Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex' }
     ),
     [string]$AgentsHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.agents'),
+    [string]$CursorHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cursor'),
     [Alias('PlatformHome')][string]$HarnessHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.agentic-harness'),
     [string]$GeminiHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.gemini'),
     [ValidateSet('Knowledge', 'Home')][string[]]$AntigravityProfile = @(),
@@ -20,10 +21,12 @@ $manifestPath = Join-Path $repoRoot 'portable-manifest.json'
 $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
 $codexRoot = [IO.Path]::GetFullPath($CodexHome)
 $agentsRoot = [IO.Path]::GetFullPath($AgentsHome)
+$cursorRoot = [IO.Path]::GetFullPath($CursorHome)
 $harnessRoot = [IO.Path]::GetFullPath($HarnessHome)
 $geminiRoot = [IO.Path]::GetFullPath($GeminiHome)
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $codexBackupRoot = Join-Path $codexRoot (Join-Path 'portable-backups' $timestamp)
+$cursorBackupRoot = Join-Path $cursorRoot (Join-Path 'portable-backups' $timestamp)
 $harnessBackupRoot = Join-Path $harnessRoot (Join-Path 'portable-backups' $timestamp)
 $antigravityBackupRoot = Join-Path $geminiRoot (Join-Path 'portable-backups' $timestamp)
 $backupRoot = $codexBackupRoot
@@ -215,11 +218,33 @@ if (-not $SkipConfig) { Merge-AgentConfig }
 Write-Host "Portable Codex configuration installed. Backups: $codexBackupRoot"
 Write-Host 'Restart Codex or start a new task so global instructions and skills are rediscovered.'
 
+$backupRoot = $cursorBackupRoot
+$cursorAdapter = Get-AdapterManifest -RepositoryRoot $repoRoot -Adapter 'Cursor'
+$cursorContent = Get-AdapterInstructionContent -RepositoryRoot $repoRoot -AdapterManifest $cursorAdapter
+if ($PSCmdlet.ShouldProcess($cursorRoot, 'Create Cursor configuration root')) { New-Item -ItemType Directory -Force -Path $cursorRoot | Out-Null }
+Install-ManagedContent -Content $cursorContent -Target (Join-Path $cursorRoot 'rules\agentic-harness.mdc') -AllowedRoot $cursorRoot -RelativeBackup 'rules\agentic-harness.mdc'
+Install-ManagedDirectory -Source (Join-Path $repoRoot 'global\memory-bank') -Target (Join-Path $cursorRoot 'memory-bank') -AllowedRoot $cursorRoot -RelativeBackup 'memory-bank'
+foreach ($agentFile in $manifest.agentFiles) {
+    $source = Join-Path $repoRoot "global\agents\$agentFile"
+    $raw = Get-Content -Raw -LiteralPath $source
+    $name = [regex]::Match($raw, '(?m)^name\s*=\s*"([^"]+)"').Groups[1].Value
+    $description = [regex]::Match($raw, '(?m)^description\s*=\s*"([^"]+)"').Groups[1].Value
+    $instructions = [regex]::Match($raw, '(?s)developer_instructions\s*=\s*"""\s*(.*?)\s*"""').Groups[1].Value.Trim()
+    if (-not $name -or -not $description -or -not $instructions) { throw "Cannot project Cursor agent from $source" }
+    $cursorAgent = "---`nname: $name`ndescription: $description`n---`n`n$instructions`n"
+    Install-ManagedContent -Content $cursorAgent -Target (Join-Path $cursorRoot "agents\$name.md") -AllowedRoot $cursorRoot -RelativeBackup "agents\$name.md"
+}
+Write-Host "Portable Cursor configuration installed. Backups: $cursorBackupRoot"
+Write-Host 'Restart Cursor so global rules, agents, memory, and shared skills are rediscovered.'
+
 $backupRoot = $antigravityBackupRoot
 $adapter = Get-AdapterManifest -RepositoryRoot $repoRoot -Adapter 'Antigravity'
 $content = Get-AdapterInstructionContent -RepositoryRoot $repoRoot -AdapterManifest $adapter
 if ($PSCmdlet.ShouldProcess($geminiRoot, 'Create Antigravity configuration root')) { New-Item -ItemType Directory -Force -Path $geminiRoot | Out-Null }
 Install-ManagedContent -Content $content -Target (Join-Path $geminiRoot 'GEMINI.md') -AllowedRoot $geminiRoot -RelativeBackup 'GEMINI.md'
 Write-Host "Portable Antigravity rules installed. Backups: $antigravityBackupRoot"
+foreach ($skill in $manifest.skills) {
+    Install-ManagedDirectory -Source (Join-Path $repoRoot "skills\$skill") -Target (Join-Path $geminiRoot "config\skills\$skill") -AllowedRoot $geminiRoot -RelativeBackup "config\skills\$skill"
+}
 Write-Host 'Restart Antigravity so global rules are rediscovered.'
 Write-Host "Ollama adapter materialized at $(Join-Path $harnessRoot 'adapters\ollama'). Runtime installation and model weights remain external."

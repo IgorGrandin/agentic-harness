@@ -20,7 +20,7 @@ Generalize the existing Codex harness into a Markdown-first agentic platform wit
 | Boundary | Existing content | V2 destination |
 |---|---|---|
 | Universal | precedence, progressive disclosure, durable memory, simplicity, evidence, permissions, security | `core/policies/` |
-| Software | SDD, Sol/Luna/Terra routing, coding roles, Git/worktrees, engineering verification and specialist skills | `profiles/software/` |
+| Coder | SDD, coding roles, Git/worktrees, engineering verification and specialist skills | `profiles/coder/` |
 | Codex | `.codex` paths, agent TOML, `[agents]` merge, shared skill installation | `adapters/codex/` plus compatible `global/` materialization |
 | Other runtimes | no current implementation | minimal Antigravity and Ollama adapters |
 | Capabilities | implicit in runtime/tool configuration | shared `mcp/registry.json`, declared by profiles |
@@ -45,7 +45,7 @@ Rejected alternatives:
 
 1. Audit and baseline verification.
 2. Extract universal policies.
-3. Create the Software Profile and Codex Adapter; prove compatibility.
+3. Create the executor-agnostic Coder Profile and runtime adapters; prove compatibility.
 4. Create the Assistant Profile and documented Antigravity Adapter using current official paths; always compose Knowledge and Home.
 5. Always install the Ollama adapter and Qwen 3.5 9B Modelfiles without installing the runtime or weights.
 6. Add Knowledge/Home policy scaffolding and shared capability registry.

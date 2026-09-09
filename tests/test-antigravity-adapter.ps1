@@ -20,25 +20,27 @@ $geminiHome = Join-Path $testRoot 'gemini-home'
 $harnessHome = Join-Path $testRoot 'harness-home'
 $codexHome = Join-Path $testRoot 'codex-home'
 $agentsHome = Join-Path $testRoot 'agents-home'
+$cursorHome = Join-Path $testRoot 'cursor-home'
 $sample = Join-Path $testRoot 'sample.log'
 New-Item -ItemType Directory -Force -Path $testRoot | Out-Null
 [IO.File]::WriteAllText($sample, 'read-only evidence sample', [Text.UTF8Encoding]::new($false))
 $sampleHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sample).Hash
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -Runtime Antigravity -GeminiHome $geminiHome -CodexHome $codexHome -AgentsHome $agentsHome -HarnessHome $harnessHome -WhatIf 6>$null
+& (Join-Path $repoRoot 'scripts\install.ps1') -Runtime Antigravity -GeminiHome $geminiHome -CodexHome $codexHome -CursorHome $cursorHome -AgentsHome $agentsHome -HarnessHome $harnessHome -WhatIf 6>$null
 if (Test-Path -LiteralPath (Join-Path $geminiHome 'GEMINI.md')) { throw 'Antigravity -WhatIf wrote GEMINI.md.' }
 if (Test-Path -LiteralPath $harnessHome) { throw 'Global -WhatIf wrote the shared harness.' }
 if (Test-Path -LiteralPath $codexHome) { throw 'Antigravity -WhatIf touched Codex home.' }
 if (Test-Path -LiteralPath $agentsHome) { throw 'Antigravity -WhatIf touched shared agents home.' }
+if (Test-Path -LiteralPath $cursorHome) { throw 'Antigravity -WhatIf touched Cursor home.' }
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -Runtime Antigravity -GeminiHome $geminiHome -CodexHome $codexHome -AgentsHome $agentsHome -HarnessHome $harnessHome
+& (Join-Path $repoRoot 'scripts\install.ps1') -Runtime Antigravity -GeminiHome $geminiHome -CodexHome $codexHome -CursorHome $cursorHome -AgentsHome $agentsHome -HarnessHome $harnessHome
 $installed = Join-Path $geminiHome 'GEMINI.md'
 if (-not (Test-Path -LiteralPath $installed -PathType Leaf)) { throw 'Antigravity GEMINI.md was not installed.' }
 
 $expectedHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $repoRoot 'adapters\antigravity\GEMINI.md')).Hash
 $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installed).Hash
 if ($expectedHash -ne $actualHash) { throw 'Installed Antigravity base rules differ from the materialized adapter.' }
-if (-not (Test-Path -LiteralPath (Join-Path $harnessHome 'profiles\software\PROFILE.md'))) { throw 'Shared harness was not installed.' }
+if (-not (Test-Path -LiteralPath (Join-Path $harnessHome 'profiles\coder\PROFILE.md'))) { throw 'Shared harness was not installed.' }
 
 $content = Get-Content -Raw -LiteralPath $installed
 foreach ($marker in @(
@@ -52,7 +54,7 @@ foreach ($marker in @(
     'HUMAN REVIEW',
     'STRONG CONFIRMATION',
     'four permanent profiles',
-    'This Antigravity adapter activates Assistant, Knowledge, and Home',
+    'This Antigravity adapter activates Coder, Assistant, Knowledge, and Home',
     '`DECLARED`',
     '`ACTIVE`',
     '`CONNECTED`',

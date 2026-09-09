@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "codex",
+  "id": "cursor",
   "installMode": "always",
-  "instructionOutput": "global/AGENTS.md",
+  "instructionOutput": "adapters/cursor/rules/agentic-harness.mdc",
   "instructionSources": [
-    "adapters/codex/header.md",
+    "adapters/cursor/header.mdc",
     "core/policies/context-memory.md",
     "core/policies/session-lifecycle.md",
     "core/policies/evidence.md",
@@ -12,13 +12,13 @@
     "profiles/catalog.md",
     "memory/domains.md",
     "profiles/coder/PROFILE.md",
-    "adapters/codex/runtime.md"
+    "adapters/cursor/runtime.md"
   ],
   "destinations": {
-    "instructions": "~/.codex/AGENTS.md",
-    "memory": "~/.codex/memory-bank/",
-    "agents": "~/.codex/agents/",
+    "rules": "~/.cursor/rules/agentic-harness.mdc",
+    "memory": "~/.cursor/memory-bank/",
+    "agents": "~/.cursor/agents/",
     "skills": "~/.agents/skills/",
-    "routing": "~/.codex/config.toml [agents]"
+    "mcp": "~/.cursor/mcp.json (user-managed)"
   }
 }

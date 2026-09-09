@@ -18,12 +18,14 @@ $required = @(
     'core\policies\session-lifecycle.md',
     'core\policies\evidence.md',
     'core\policies\security-permissions.md',
-    'profiles\software\PROFILE.md',
+    'profiles\coder\PROFILE.md',
     'profiles\assistant\PROFILE.md',
     'profiles\knowledge\PROFILE.md',
     'profiles\home\PROFILE.md',
     'profiles\registry.json',
     'adapters\codex\adapter.json',
+    'adapters\cursor\adapter.json',
+    'adapters\cursor\rules\agentic-harness.mdc',
     'adapters\antigravity\adapter.json',
     'adapters\antigravity\GEMINI.md',
     'adapters\ollama\adapter.json',
@@ -35,6 +37,8 @@ $required = @(
     'scripts\adapter-tools.ps1',
     'scripts\materialize.ps1',
     'scripts\install.ps1',
+    'scripts\install-azure-devops-mcp.ps1',
+    'scripts\select-executor.ps1',
     'scripts\export.ps1',
     'scripts\verify.ps1'
 )
@@ -43,7 +47,7 @@ foreach ($relative in $required) {
 }
 
 if ($null -ne $manifest) {
-    if ($manifest.schemaVersion -ne 3) { $errors.Add("Unsupported manifest schema version: $($manifest.schemaVersion)") }
+    if ($manifest.schemaVersion -ne 4) { $errors.Add("Unsupported manifest schema version: $($manifest.schemaVersion)") }
     foreach ($name in $manifest.corePolicyFiles) {
         if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "core\policies\$name"))) { $errors.Add("Missing core policy: $name") }
     }
@@ -59,7 +63,7 @@ if ($null -ne $manifest) {
     foreach ($name in $manifest.harnessInstall.files) {
         if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $name) -PathType Leaf)) { $errors.Add("Missing platform file: $name") }
     }
-    foreach ($adapterName in @('codex', 'antigravity')) {
+    foreach ($adapterName in @('codex', 'cursor', 'antigravity')) {
         $adapterManifest = Get-Content -Raw -LiteralPath (Join-Path $repoRoot "adapters\$adapterName\adapter.json") | ConvertFrom-Json
         if ($adapterManifest.installMode -ne 'always') { $errors.Add("Adapter '$adapterName' is not configured for global installation.") }
     }
@@ -115,7 +119,7 @@ foreach ($script in (Get-ChildItem -LiteralPath $repoRoot -Filter '*.ps1' -File 
 }
 
 . (Join-Path $PSScriptRoot 'adapter-tools.ps1')
-foreach ($adapterName in @('Codex', 'Antigravity')) {
+foreach ($adapterName in @('Codex', 'Cursor', 'Antigravity')) {
     try {
         $adapter = Get-AdapterManifest -RepositoryRoot $repoRoot -Adapter $adapterName
         $expected = Get-AdapterInstructionContent -RepositoryRoot $repoRoot -AdapterManifest $adapter
@@ -131,6 +135,11 @@ $coreContent = Get-ChildItem -LiteralPath (Join-Path $repoRoot 'core\policies') 
     ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }
 if (($coreContent -join "`n") -match '(?i)\b(?:Sol|Luna|Terra|Codex|Antigravity|Ollama|Qwen)\b') {
     $errors.Add('Universal Core policies contain runtime- or model-specific routing.')
+}
+
+$coderContent = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'profiles\coder\PROFILE.md')
+if ($coderContent -match '(?i)\b(?:GPT|Gemini|Claude|Sol|Luna|Terra|Codex|Cursor|Antigravity|Ollama|Qwen)\b') {
+    $errors.Add('Coder profile contains runtime- or model-specific routing.')
 }
 
 try {

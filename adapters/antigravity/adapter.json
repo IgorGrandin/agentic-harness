@@ -11,6 +11,7 @@
     "core/policies/security-permissions.md",
     "profiles/catalog.md",
     "memory/domains.md",
+    "profiles/coder/PROFILE.md",
     "profiles/assistant/PROFILE.md",
     "profiles/knowledge/PROFILE.md",
     "profiles/knowledge/workflows/vault-organization.md",

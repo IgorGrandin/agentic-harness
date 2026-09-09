@@ -1,8 +1,9 @@
 {
   "schemaVersion": 1,
   "capabilities": {
-    "github": { "status": "external", "allowedProfiles": ["software"] },
-    "jira": { "status": "external", "allowedProfiles": ["software"] },
+    "azure-devops": { "status": "external", "allowedProfiles": ["coder"] },
+    "github": { "status": "external", "allowedProfiles": ["coder"] },
+    "jira": { "status": "external", "allowedProfiles": ["coder"] },
     "windows": { "status": "planned", "allowedProfiles": ["assistant"] },
     "google": { "status": "external", "allowedProfiles": ["assistant", "knowledge"] },
     "obsidian": { "status": "planned", "allowedProfiles": ["knowledge"] },

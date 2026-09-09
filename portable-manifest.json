@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "corePolicyFiles": [
     "context-memory.md",
     "session-lifecycle.md",
@@ -8,7 +8,7 @@
   ],
   "profileFiles": [
     "catalog.md",
-    "software/PROFILE.md",
+    "coder/PROFILE.md",
     "assistant/PROFILE.md",
     "knowledge/PROFILE.md",
     "knowledge/workflows/vault-organization.md",
@@ -16,11 +16,13 @@
   ],
   "adapterManifests": [
     "codex/adapter.json",
+    "cursor/adapter.json",
     "antigravity/adapter.json",
     "ollama/adapter.json"
   ],
   "materializedInstructions": [
     "global/AGENTS.md",
+    "adapters/cursor/rules/agentic-harness.mdc",
     "adapters/antigravity/GEMINI.md"
   ],
   "capabilityRegistry": "mcp/registry.json",
@@ -54,6 +56,7 @@
     "verifier.toml"
   ],
   "skills": [
+    "azure-devops-card-flow",
     "api-contract-review",
     "database-change-safety",
     "frontend-design",

@@ -60,7 +60,7 @@
 
 The harness declares four permanent profiles:
 
-- Software: software engineering, active primarily through Codex.
+- Coder: software engineering role, executable by Cursor (default), Codex, or Antigravity.
 - Assistant: general personal assistance, active primarily through Antigravity.
 - Knowledge: Markdown-first second brain with Obsidian as its source-of-truth boundary, composed with Assistant.
 - Home: residential automation with Home Assistant as its target source-of-truth boundary, composed with Assistant.
@@ -89,6 +89,39 @@ The existing `global/memory-bank/` remains the shared, cross-profile memory bank
 | Home | Home Assistant plus bounded documentation | safe conceptual configuration only; never credentials, access data, or household secrets |
 
 Conversation history remains working memory in every runtime. Discovery of a memory source does not load it automatically.
+
+## Coder Profile
+
+The Coder profile defines the software-engineering role. It is independent from the runtime and model that execute it.
+
+### Responsibilities and method
+
+- Convert an explicit request or active Markdown specification into scoped, reviewable changes.
+- Inspect repository reality before editing and preserve established architecture unless the task requires a documented change.
+- Use the `sdd-workflow` skill for bugs, features, discovery, refactors, and reviews; use its fast lane for explicit, local, low-risk work.
+- Keep code, tests, decisions, and durable documentation traceable to acceptance criteria or the explicit request.
+- Escalate material ambiguity, product decisions, architecture tradeoffs, or evidence that invalidates the plan.
+
+### Execution constraints
+
+- For diagnosis or review, inspect and report; edit only when implementation is requested.
+- Prefer one writer. Parallel writers require isolated worktrees and non-overlapping ownership.
+- Choose subagent roles by activity and use delegation only when context isolation, independence, or parallelism has a material net benefit.
+- Do not bind roles to providers or model names. Runtime adapters own runtime-specific routing and configuration.
+
+### Definition of done
+
+- The requested behavior and relevant acceptance criteria are satisfied.
+- The smallest decisive tests, lint, type checks, or observable validations pass.
+- Correctness, security, compatibility, regression risk, and data integrity were considered in proportion to the change.
+- Durable architecture, setup, behavior, or operational changes are reflected in Markdown documentation.
+- Remaining limitations and unverified assumptions are reported explicitly.
+
+### Reusable roles
+
+- Shared conceptual roles are `scout`, `implementer`, `verifier`, `reviewer`, and `architect_escalation`.
+- Adapters may translate these roles to native runtime formats without changing their responsibilities.
+- A verifier checks claims independently and does not silently repair failures; a reviewer prioritizes actionable correctness and risk findings.
 
 ## Personal Assistant Profile
 
@@ -163,11 +196,12 @@ This profile is a boundary and safety contract only. It does not migrate Smart L
 - Keep project rules, workflows, and skills inside the workspace `.agents/` directories when project scope is required.
 - Treat globally configured MCP servers as available capabilities only after the current project explicitly permits their tools.
 - Never place OAuth clients, access tokens, API keys, or authenticated MCP state in this repository.
+- When a repository contains `.agentic-harness/executor.json`, treat it as the documented default for new Coder tasks; an explicit user choice of runtime takes precedence.
 
 ### Runtime activation and current state
 
-- This Antigravity adapter activates Assistant, Knowledge, and Home. Software is active primarily through the Codex adapter.
-- For this V2, Assistant, Knowledge, and Home are `ACTIVE` in Antigravity.
+- This Antigravity adapter activates Coder, Assistant, Knowledge, and Home. Cursor is the default Coder executor, but Antigravity remains a supported alternative.
+- For this version, Coder, Assistant, Knowledge, and Home are `ACTIVE` in Antigravity.
 - The Assistant durable-memory source, Obsidian integration, Home Assistant integration, MCP authentication, and automatic Antigravity-to-Ollama fallback remain `PLANNED` unless current runtime evidence proves that they are `CONNECTED`.
 - Describe Home Assistant as the target source of truth until that integration is connected.
 

@@ -14,6 +14,7 @@ if (-not $testRoot.StartsWith($allowedPrefix, [StringComparison]::OrdinalIgnoreC
 if (Test-Path -LiteralPath $testRoot) { Remove-Item -LiteralPath $testRoot -Recurse -Force }
 $testCodexHome = Join-Path $testRoot 'codex-home'
 $testAgentsHome = Join-Path $testRoot 'agents-home'
+$testCursorHome = Join-Path $testRoot 'cursor-home'
 $testHarnessHome = Join-Path $testRoot 'harness-home'
 $testGeminiHome = Join-Path $testRoot 'gemini-home'
 New-Item -ItemType Directory -Force -Path (Join-Path $testCodexHome 'memory-bank'), (Join-Path $testAgentsHome 'skills') | Out-Null
@@ -24,13 +25,14 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'fixtures\existing-config.toml')
 [IO.File]::WriteAllText((Join-Path $testCodexHome 'auth.json'), '{"must":"stay local"}', [Text.UTF8Encoding]::new($false))
 
 $beforeWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -WhatIf 6>$null
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -WhatIf 6>$null
 $afterWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
 if ($beforeWhatIf.Hash -ne $afterWhatIf.Hash) { throw '-WhatIf mutated AGENTS.md.' }
 if (Test-Path -LiteralPath $testHarnessHome) { throw '-WhatIf created the global harness home.' }
 if (Test-Path -LiteralPath $testGeminiHome) { throw '-WhatIf created the Antigravity home.' }
+if (Test-Path -LiteralPath $testCursorHome) { throw '-WhatIf created the Cursor home.' }
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome
 if (-not (Test-Path -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md') -PathType Leaf)) { throw 'Global install did not apply the Antigravity adapter.' }
 
 function Assert-SameFile {
@@ -42,7 +44,9 @@ function Assert-SameFile {
 }
 
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\AGENTS.md') -Actual (Join-Path $testCodexHome 'AGENTS.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'adapters\cursor\rules\agentic-harness.mdc') -Actual (Join-Path $testCursorHome 'rules\agentic-harness.mdc')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testCodexHome 'memory-bank\INDEX.md')
+Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testCursorHome 'memory-bank\INDEX.md')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\agents\scout.toml') -Actual (Join-Path $testCodexHome 'agents\scout.toml')
 Assert-SameFile -Expected (Join-Path $repoRoot 'skills\sdd-workflow\SKILL.md') -Actual (Join-Path $testAgentsHome 'skills\sdd-workflow\SKILL.md')
 Assert-SameFile -Expected (Join-Path $repoRoot 'core\policies\context-memory.md') -Actual (Join-Path $testHarnessHome 'core\policies\context-memory.md')
@@ -56,7 +60,7 @@ Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -A
 $codexInstructions = Get-Content -Raw -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
 foreach ($marker in @(
     'four permanent profiles',
-    'This Codex adapter activates Software',
+    'This Codex adapter activates Coder',
     'Assistant, Knowledge, and Home remain known platform profiles but are not activated',
     '`CONNECTED` through `~/.codex/memory-bank/`',
     'Sol, Luna, and Terra are `CONFIGURED`',
