@@ -24,6 +24,8 @@ If a presumed microtask exceeds its budget, reclassify it and choose direct or d
 
 Roles do not imply a model, technology, or skill. Select the model from the routing rubric. Mention a skill in the spawn task only when that skill applies.
 
+For Codex, make that selection operational in every `spawn_agent` call: set `model`, set `reasoning_effort`, and use `fork_turns: "none"` or a positive limited count when the worker differs from the primary model. The configured Luna default is only a fallback. A full-history fork inherits the primary Sol model and therefore must not be used to launch Luna or Terra work.
+
 ## Default flow
 
 1. The Sol orchestrator owns intake, the active spec, routing, and synthesis with reasoning proportional to the task.

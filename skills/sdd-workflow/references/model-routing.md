@@ -79,3 +79,9 @@ Raise Luna Medium to Luna Max when only reasoning depth increases and the lane s
 During execution, escalate on newly discovered cross-cutting impact, failed assumptions, nondeterminism, or inability to define a decisive test after one focused investigation cycle.
 
 The orchestrator stays in the Sol family and owns the specification, routing, synthesis, and any materially different product or architecture decision. Use high reasoning only when consequential signals justify it.
+
+## Codex spawn enforcement
+
+When Codex delegates, every spawn declares the selected `model` and `reasoning_effort`; do not rely on the global default to override inheritance. Use `fork_turns: "none"` by default and send a self-contained task packet. A positive limited turn count is allowed only when those turns are the smallest useful context. Never use `fork_turns: "all"` when selecting Luna or Terra because the full-history fork inherits the primary Sol model.
+
+A Sol subagent requires an explicit consequential signal from this rubric and a routing-log reason. Routine scouting, repository discovery, bounded implementation, and focused verification do not qualify. If no consequential signal exists, execute directly with proportional effort or use Luna or Terra as appropriate.

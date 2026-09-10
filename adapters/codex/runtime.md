@@ -12,6 +12,9 @@
 - Keep orchestration and specification on GPT-5.6 Sol with proportional reasoning: low for simple work, medium for bounded synthesis, and high only for consequential work.
 - Delegate to Luna Medium only when cheaper execution or context isolation is expected to outweigh spawn and synthesis overhead.
 - Use Luna Max for narrow deep reasoning, Terra High for broader bounded complexity, and Sol High for consequential judgment.
+- Treat the configured default subagent model as a fallback, not enforcement. Every Codex spawn must explicitly set `model` and `reasoning_effort` from the routing rubric.
+- A spawn that selects a model different from the primary agent must use `fork_turns: "none"` or a positive limited turn count and pass the bounded context in its task. Never use `fork_turns: "all"` for Luna or Terra because a full-history fork inherits the primary Sol model.
+- Use a Sol subagent only for consequential judgment that cannot remain with the primary orchestrator or a lower tier. Record the concrete ambiguity, risk, or cross-domain decision that required Sol; availability or a free concurrency slot is not sufficient.
 - Escalate before implementation when the selected lane is clearly insufficient; do not require a failed attempt.
 - Follow `sdd-workflow/references/model-routing.md` for the detailed rubric.
 - Run at most three subagents concurrently while the installed Codex configuration retains that limit.

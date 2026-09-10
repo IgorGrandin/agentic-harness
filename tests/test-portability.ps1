@@ -64,6 +64,9 @@ foreach ($marker in @(
     'Assistant, Knowledge, and Home remain known platform profiles but are not activated',
     '`CONNECTED` through `~/.codex/memory-bank/`',
     'Sol, Luna, and Terra are `CONFIGURED`',
+    'Every Codex spawn must explicitly set `model` and `reasoning_effort`',
+    'Never use `fork_turns: "all"` for Luna or Terra',
+    'Use a Sol subagent only for consequential judgment',
     'not an automatic Codex fallback'
 )) {
     if (-not $codexInstructions.Contains($marker)) { throw "Codex platform-awareness contract missing: $marker" }
