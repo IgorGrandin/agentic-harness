@@ -6,8 +6,17 @@
 - When a repository contains `.agentic-harness/executor.json`, treat it as the documented default for new Coder tasks; an explicit user choice of runtime takes precedence.
 - Keep Codex routing configuration in the allowlisted `[agents]` fragment installed by this repository.
 
+### Local project toolchains
+
+- Use the runtime and package manager installed and configured by the user for the repository. Respect the repository's `packageManager`, lockfile, and documented commands; do not substitute a bundled runtime, an alternate runtime, or another package manager without explicit authorization.
+- On Windows, non-interactive shells may not inherit the runtime-manager activation visible in the user's terminal. Resolve `nvm`, `node`, `npm`, and `npx` from the local user environment and reuse the already configured version before reporting the toolchain unavailable.
+- Do not install, activate, or switch runtime versions implicitly. If the repository's local toolchain still cannot be used, report the limitation instead of falling back to an alternate runtime.
+
 ### Runtime-specific routing
 
+- The harness explicitly authorizes and instructs the primary Codex orchestrator to decide automatically whether to delegate each eligible activity; the user does not need to request subagents in every task or skill invocation.
+- Apply that decision after decomposing the work by responsibility. Prefer bounded Luna scouts, implementers, verifiers, or reviewers when separate backend, frontend, infrastructure, test, or investigation surfaces can be isolated and the expected token, context, or latency savings exceed handoff and synthesis cost.
+- Keep direct execution for microtasks and tightly coupled work whose handoff would cost more than it saves. A skill invocation does not disable delegation unless the skill explicitly requires direct execution or forbids subagents.
 - Codex may use its configured Sol, Luna, and Terra routes. These model names belong to this adapter, never to the Coder profile.
 - Keep orchestration and specification on GPT-5.6 Sol with proportional reasoning: low for simple work, medium for bounded synthesis, and high only for consequential work.
 - Delegate to Luna Medium only when cheaper execution or context isolation is expected to outweigh spawn and synthesis overhead.
