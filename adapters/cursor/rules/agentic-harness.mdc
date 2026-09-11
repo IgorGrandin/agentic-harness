@@ -112,6 +112,8 @@ The Coder profile defines the software-engineering role. It is independent from 
 - For diagnosis or review, inspect and report; edit only when implementation is requested.
 - Prefer one writer. Parallel writers require isolated worktrees and non-overlapping ownership.
 - Choose subagent roles by activity and use delegation only when context isolation, independence, or parallelism has a material net benefit.
+- A skill defines the procedure for work, not which agent owns it. Discovering or invoking a skill does not require the orchestrator to load its full body.
+- After delegation, the worker that owns a stage reads the authoritative skill and only the references needed for that stage. Return compact evidence and decisions instead of propagating full skill bodies, transcripts, or raw logs.
 - Do not bind roles to providers or model names. Runtime adapters own runtime-specific routing and configuration.
 
 ### Definition of done

@@ -14,9 +14,13 @@
 
 ### Runtime-specific routing
 
+- Treat root context as premium. The primary Sol agent is a thin control plane for intake, decomposition, specification ownership, routing, consequential decisions, synthesis, and final acceptance; move noisy or mechanical execution out of the root when delegation has a material net gain.
 - The harness explicitly authorizes and instructs the primary Codex orchestrator to decide automatically whether to delegate each eligible activity; the user does not need to request subagents in every task or skill invocation.
 - Apply that decision after decomposing the work by responsibility. Prefer bounded Luna scouts, implementers, verifiers, or reviewers when separate backend, frontend, infrastructure, test, or investigation surfaces can be isolated and the expected token, context, or latency savings exceed handoff and synthesis cost.
 - Keep direct execution for microtasks and tightly coupled work whose handoff would cost more than it saves. A skill invocation does not disable delegation unless the skill explicitly requires direct execution or forbids subagents.
+- Do not load a non-trivial project-local or execution-oriented skill into the root merely because it was invoked. Prefer a Luna scout with `fork_turns: "none"` to read the authoritative source and return a compact Skill Execution Capsule; control-plane skills needed for routing or specification may be read directly by Sol.
+- Once a stage is delegated, do not shadow-execute its investigation, skill reading, checks, or process polling in the root. Resume that surface only for failure, escalation, conflicting evidence, or a material decision.
+- The worker that starts a long-running build, test, gate, or similar process owns its waiting and polling through completion and returns a compact completion packet rather than raw logs.
 - Codex may use its configured Sol, Luna, and Terra routes. These model names belong to this adapter, never to the Coder profile.
 - Keep orchestration and specification on GPT-5.6 Sol with proportional reasoning: low for simple work, medium for bounded synthesis, and high only for consequential work.
 - Delegate to Luna Medium only when cheaper execution or context isolation is expected to outweigh spawn and synthesis overhead.

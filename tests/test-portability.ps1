@@ -67,9 +67,35 @@ foreach ($marker in @(
     'Every Codex spawn must explicitly set `model` and `reasoning_effort`',
     'Never use `fork_turns: "all"` for Luna or Terra',
     'Use a Sol subagent only for consequential judgment',
+    'Treat root context as premium',
+    'Skill Execution Capsule',
+    'do not shadow-execute',
+    'owns its waiting and polling through completion',
+    'Run at most three subagents concurrently',
     'not an automatic Codex fallback'
 )) {
     if (-not $codexInstructions.Contains($marker)) { throw "Codex platform-awareness contract missing: $marker" }
+}
+
+$installedOrchestration = Get-Content -Raw -LiteralPath (Join-Path $testAgentsHome 'skills\sdd-workflow\references\subagent-orchestration.md')
+foreach ($marker in @(
+    'Skill routing and ownership transfer',
+    '1,500 tokens or less',
+    'never replaces the source',
+    'the parent does not poll',
+    'Completion packet'
+)) {
+    if (-not $installedOrchestration.Contains($marker)) { throw "Installed orchestration contract missing: $marker" }
+}
+
+$installedModelRouting = Get-Content -Raw -LiteralPath (Join-Path $testAgentsHome 'skills\sdd-workflow\references\model-routing.md')
+foreach ($marker in @(
+    'Consequentiality selects who must make a decision',
+    'Keep the Sol root thin',
+    'fork_turns: "none"',
+    'Never use `fork_turns: "all"` when selecting Luna or Terra'
+)) {
+    if (-not $installedModelRouting.Contains($marker)) { throw "Installed model-routing contract missing: $marker" }
 }
 
 $antigravityRules = Get-Content -Raw -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md')

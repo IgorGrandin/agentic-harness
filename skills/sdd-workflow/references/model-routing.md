@@ -8,6 +8,8 @@ Role, model, and skill are independent axes:
 
 Choose the processing lane before the model tier. Delegation is justified by expected net savings or useful context isolation, not merely because work exceeds the microtask budget.
 
+Consequentiality selects who must make a decision and the reasoning tier for that judgment. It does not require the same agent or tier to perform every mechanical tool call, inspection, edit, or check. Keep bounded execution with Luna or Terra when appropriate and escalate a compact decision packet to Sol only for the consequential choice.
+
 ## Microtask direct-execution exception
 
 The Sol High orchestrator may execute directly only when all of these remain true:
@@ -79,6 +81,8 @@ Raise Luna Medium to Luna Max when only reasoning depth increases and the lane s
 During execution, escalate on newly discovered cross-cutting impact, failed assumptions, nondeterminism, or inability to define a decisive test after one focused investigation cycle.
 
 The orchestrator stays in the Sol family and owns the specification, routing, synthesis, and any materially different product or architecture decision. Use high reasoning only when consequential signals justify it.
+
+Keep the Sol root thin: consume capsules, escalation packets, and completion packets instead of full skill bodies, transcripts, or raw command output. While delegated ownership is active, do not repeat the worker's investigation or poll its process unless failure, conflicting evidence, or a material decision requires intervention. Integration and final verification may run after merged changes or shared inputs invalidate the worker's earlier evidence.
 
 ## Codex spawn enforcement
 

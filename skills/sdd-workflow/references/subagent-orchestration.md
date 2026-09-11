@@ -36,6 +36,33 @@ For Codex, make that selection operational in every `spawn_agent` call: set `mod
 6. Keep a single write owner. For low-risk work, the implementer supplies focused verification and no separate verifier or reviewer is spawned by default.
 7. Sol consumes the worker's summarized evidence and does not repeat a passing check unless relevant files or test inputs changed after the worker ran it.
 
+## Skill routing and ownership transfer
+
+Skill discovery or invocation does not imply loading the full skill into the orchestrator. For a non-trivial project-local or execution-oriented skill, a scout may read the authoritative skill and only its necessary references, then return a Skill Execution Capsule containing:
+
+- skill path and purpose;
+- mandatory stages and referenced instructions;
+- decisions reserved for the parent;
+- delegatable work and stop conditions;
+- output contract and only the evidence paths needed for routing.
+
+Keep the capsule near 1,500 tokens or less and exclude transcripts, dumps, and copied skill bodies. It aids routing but never replaces the source: the worker executing a stage reads the original skill and references authoritative for that stage.
+
+Delegation transfers ownership of the assigned surface. While that ownership is active, the parent must not shadow-execute the same skill reading, search, checks, or implementation. It may re-enter after an escalation, failure, evidence conflict, or material decision, and may perform integration or final verification after merged changes or shared inputs invalidate the worker's earlier evidence. A worker that starts a long-running build, test, gate, or similar process owns its waiting and polling until final status; the parent does not poll the worker's process.
+
+## Completion packet
+
+For a normal return, report only:
+
+- outcome;
+- changed artifacts;
+- decisive evidence;
+- findings or residual risks;
+- decision required, if any;
+- next recommended action.
+
+Do not attach raw logs, full diffs, transcripts, or full skill text unless the parent explicitly needs a narrow excerpt to resolve a conflict.
+
 ## Parallelism gate
 
 Before spawning more than one subagent, the orchestrator maps each candidate task's inputs, outputs, write surface, and dependencies.
