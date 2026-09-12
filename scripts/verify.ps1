@@ -15,6 +15,7 @@ $required = @(
     'README.md',
     'global\AGENTS.md',
     'core\policies\context-memory.md',
+    'core\policies\deterministic-execution.md',
     'core\policies\session-lifecycle.md',
     'core\policies\evidence.md',
     'core\policies\security-permissions.md',
@@ -41,6 +42,8 @@ $required = @(
     'scripts\select-executor.ps1',
     'scripts\export.ps1',
     'scripts\verify.ps1'
+    ,'bin\agentic-run.ps1'
+    ,'bin\agentic-finalize.ps1'
 )
 foreach ($relative in $required) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relative))) { $errors.Add("Missing required path: $relative") }
@@ -167,6 +170,21 @@ $agentConfig = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'config\agents
 foreach ($expected in @('max_concurrent_threads_per_session', 'enabled', 'default_subagent_model', 'default_subagent_reasoning_effort', 'interrupt_message')) {
     if ($agentConfig -notmatch "(?m)^\s*$([regex]::Escape($expected))\s*=") { $errors.Add("Missing portable agent setting: $expected") }
 }
+
+$codexRuntime = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'adapters\codex\runtime.md')
+$modelRouting = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'skills\sdd-workflow\references\model-routing.md')
+$executionPolicy = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'core\policies\deterministic-execution.md')
+foreach ($marker in @('orchestrator is a role', 'Luna Medium', 'Luna Max', 'Terra High', 'Sol Low', 'Sol Medium', 'Sol High')) {
+    if (-not (($codexRuntime + $modelRouting).Contains($marker))) { $errors.Add("Routing policy missing: $marker") }
+}
+foreach ($marker in @('every first Sol escalation MUST use Sol Low', 'MUST NOT skip rungs', 'Medium is allowed only after Low', 'High is allowed only after Medium')) {
+    if (-not (($codexRuntime + $modelRouting).Contains($marker))) { $errors.Add("Sequential Sol escalation policy missing: $marker") }
+}
+foreach ($marker in @('MUST use it', 'repeatedly asking for status', 'Preserve commands', 'agentic-run.ps1', 'agentic-finalize.ps1')) {
+    if (-not $executionPolicy.Contains($marker)) { $errors.Add("Deterministic execution policy missing: $marker") }
+}
+if ($agentConfig -notmatch '(?m)^max_concurrent_threads_per_session\s*=\s*3\s*$') { $errors.Add('Codex maximum concurrent subagents must remain 3.') }
+if ($modelRouting -notmatch 'fork_turns: "none"' -or $modelRouting -notmatch 'Never use `fork_turns: "all"` when selecting Luna or Terra') { $errors.Add('Bounded-context model-switch policy is missing.') }
 
 if ($errors.Count -gt 0) {
     foreach ($message in $errors) { Write-Error $message }

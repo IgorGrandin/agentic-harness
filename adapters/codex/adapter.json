@@ -6,6 +6,7 @@
   "instructionSources": [
     "adapters/codex/header.md",
     "core/policies/context-memory.md",
+    "core/policies/deterministic-execution.md",
     "core/policies/session-lifecycle.md",
     "core/policies/evidence.md",
     "core/policies/security-permissions.md",

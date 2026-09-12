@@ -2,6 +2,7 @@
   "schemaVersion": 4,
   "corePolicyFiles": [
     "context-memory.md",
+    "deterministic-execution.md",
     "session-lifecycle.md",
     "evidence.md",
     "security-permissions.md"
@@ -36,7 +37,8 @@
       "memory",
       "global",
       "skills",
-      "config"
+      "config",
+      "bin"
     ],
     "files": [
       "portable-manifest.json"

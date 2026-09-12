@@ -5,7 +5,7 @@ Private, portable, Markdown-first source of truth for a runtime- and model-agnos
 ## Architecture
 
 ```text
-Core (policy, lifecycle, evidence, security)
+Core (policy, lifecycle, evidence, security, deterministic execution)
   + Profiles (coder, assistant, knowledge, home)
   + Shared assets (memory, skills, workflows, role definitions, MCP registry)
   + Adapters (cursor, codex, antigravity, ollama)
@@ -29,6 +29,7 @@ Adding a future executor should require a small adapter, installer wiring, and t
 - `adapters/{cursor,codex,antigravity,ollama}/`: minimal runtime translations.
 - `mcp/registry.json`: capability declarations, never credentials or connection state.
 - `scripts/`: materialization, installation, export, executor selection, and verification.
+- `bin/`: portable blocking execution and mechanical finalization entrypoints.
 - `tests/`: isolated smoke and portability tests.
 
 ## Materialization and installation
@@ -45,12 +46,15 @@ Materialization composes the same Core and profile Markdown into Codex `AGENTS.m
 ### Installed locations
 
 - Shared harness snapshot: `~/.agentic-harness/`
+- Stable runner entrypoints: `~/.agentic-harness/bin/agentic-run.ps1` and `agentic-finalize.ps1`
 - Shared Cursor/Codex skills: `~/.agents/skills/`
 - Codex: `~/.codex/AGENTS.md`, `memory-bank/`, `agents/*.toml`, and merged `[agents]` settings
 - Cursor: `~/.cursor/rules/agentic-harness.mdc`, `memory-bank/`, and generated `agents/*.md`
 - Antigravity: `~/.gemini/GEMINI.md` and `config/skills/`
 
 Copies are used instead of Windows links. This avoids Developer Mode and privilege dependencies. Re-run installation after pulling changes.
+
+`agentic-run.ps1` receives an explicit executable plus arguments, waits internally through success, failure, or timeout, stores stdout/stderr and run state under the machine temporary directory by default, and emits one compact JSON result. Arguments are not persisted, and log tails are opt-in. `agentic-finalize.ps1` captures Git metadata from a small JSON manifest; round-log writes require `-AllowWrite`, while staging and commit require both manifest intent and `-AllowCommit`. Project instructions remain authoritative for command and finalization semantics.
 
 ## Cursor
 
@@ -140,4 +144,5 @@ pwsh -File .\tests\test-card-branch.ps1
 pwsh -File .\tests\test-azure-devops-mcp.ps1
 pwsh -File .\tests\test-antigravity-adapter.ps1
 pwsh -File .\tests\test-ollama-adapter.ps1
+pwsh -File .\tests\test-execution-boundary.ps1
 ```

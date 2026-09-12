@@ -18,6 +18,10 @@ The Coder profile defines the software-engineering role. It is independent from 
 - A skill defines the procedure for work, not which agent owns it. Discovering or invoking a skill does not require the orchestrator to load its full body.
 - After delegation, the worker that owns a stage reads the authoritative skill and only the references needed for that stage. Return compact evidence and decisions instead of propagating full skill bodies, transcripts, or raw logs.
 - Do not bind roles to providers or model names. Runtime adapters own runtime-specific routing and configuration.
+- Treat the root orchestrator as a role and operational control plane, never as a fixed model identity. Root-model selection is a runtime routing decision, and an explicit user override wins.
+- Route deterministic execution through the installed blocking runner when available. The project remains authoritative for what command or finalization is required; the global harness controls only efficient execution mechanics.
+- After review approval, the verifier owns the final gate and its lifecycle through a terminal runner result. The root must not resume manual polling.
+- When a reviewer finding is accepted, correction ownership returns to the existing implementer or writer. Accepting the decision does not transfer mechanical execution to the root.
 
 ### Definition of done
 

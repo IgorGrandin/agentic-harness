@@ -10,9 +10,20 @@ Choose the processing lane before the model tier. Delegation is justified by exp
 
 Consequentiality selects who must make a decision and the reasoning tier for that judgment. It does not require the same agent or tier to perform every mechanical tool call, inspection, edit, or check. Keep bounded execution with Luna or Terra when appropriate and escalate a compact decision packet to Sol only for the consequential choice.
 
+## Root routing
+
+The orchestrator is a role, not a model identity. Select the root model after classifying the work, and honor an explicit user override. Prefer Luna Medium root for clear procedural or recurring workflows, implementation against an authoritative spec or validated manifest, and `/execute`-style execution. Root context remains premium at every model tier.
+
+Use this restrictive ladder:
+
+1. Luna Medium for procedural, bounded execution.
+2. Luna Max when only local reasoning depth increases and the work remains narrow and authorized.
+3. Terra High when bounded complexity expands across components or requires broader synthesis without a material decision.
+4. Sol Low for every first material-decision escalation. Medium and High are evidence-driven re-escalations, not initial routing choices.
+
 ## Microtask direct-execution exception
 
-The Sol High orchestrator may execute directly only when all of these remain true:
+The selected root may execute directly only when all of these remain true:
 
 - the requested outcome and target are explicit;
 - the change is local, reversible, and carries no contract, data, security, architecture, or operational risk;
@@ -21,22 +32,34 @@ The Sol High orchestrator may execute directly only when all of these remain tru
 
 Do not create a spec, plan, architecture comparison, subagent, or routing log for this lane. Reclassify before continuing if the task needs broader exploration, multiple meaningful edits, or additional verification.
 
-## Sol reasoning — proportional orchestration
+## Sol reasoning — proportional decision authority
 
-Keep the primary orchestrator and spec author in the Sol family, but do not require high reasoning for every request:
+Use Sol for material decisions, not permanent mechanical orchestration:
 
-- **Low:** microtasks with an explicit target and no material decision.
-- **Medium:** clear bounded intake, routing, and synthesis.
-- **High:** consequential work with the signals below.
+- **Low:** a bounded, well-framed consequential decision.
+- **Medium:** a consequential decision requiring broader synthesis or material ambiguity resolution.
+- **High:** exceptional judgment where risk, ambiguity, or blast radius genuinely requires the strongest tier.
 
-Choose GPT-5.6 Sol with high reasoning when any of these apply:
+Unless the user explicitly overrides the tier, the Sol ladder is sequential and MUST NOT skip rungs:
 
-- requirements are ambiguous or require tradeoffs;
-- architecture, security, concurrency, data integrity, migrations, or public contracts are involved;
-- impact crosses multiple modules or domains;
-- root cause is obscure or evidence conflicts;
-- verification is expensive or failure is costly;
-- the task requires synthesizing a large repository surface.
+1. Every first Sol call uses Low, even when the decision concerns architecture, security, data, migration, or a public contract.
+2. Medium is allowed only after Low returns a compact insufficiency packet naming the unresolved decision, evidence already considered, remaining ambiguity or synthesis need, and why more evidence or another Low pass is insufficient.
+3. High is allowed only after Medium returns the equivalent packet and identifies exceptional remaining consequence or ambiguity.
+
+Do not preselect Medium or High because a task looks difficult, spans many files, has a large context, or has available budget. Consequentiality decides whether Sol must decide; observed insufficiency decides whether reasoning rises above Low.
+
+MUST escalate to Sol Low when any of these apply; increase reasoning only through the sequential evidence gate above:
+
+- authoritative instructions conflict with repository reality;
+- a product, architecture, scope, or release decision is required;
+- auth, security, or permissions require a non-mechanical decision;
+- data integrity or a migration is ambiguous or consequential;
+- an important public contract or compatibility boundary may change;
+- evidence is materially contradictory;
+- a material reviewer finding has no obvious accepted mechanical correction;
+- human authorization is required or the worker should not decide alone.
+
+MUST NOT escalate only for file reads, clear-spec edits, config/Markdown changes, tests/builds, process waiting, Git inspection, mechanical metadata, applying an existing decision, or an accepted mechanical correction.
 
 ## Luna Medium — bounded efficiency lane
 
@@ -64,7 +87,7 @@ Choose GPT-5.6 Terra with high reasoning when Luna detects meaningful complexity
 - review or verification requiring deeper tracing than Luna can provide;
 - a contained implementation with several edge cases and decisive tests.
 
-Escalate Terra High to Sol High when ambiguity, risk, or system-wide judgment remains material.
+Escalate Terra High to Sol Low when ambiguity, risk, or system-wide judgment becomes material.
 
 ## Early escalation gate
 
@@ -76,13 +99,13 @@ Before implementation, scout only enough to estimate:
 - availability and cost of decisive verification;
 - presence of conflicting evidence or missing ownership.
 
-Raise Luna Medium to Luna Max when only reasoning depth increases and the lane stays narrow. Escalate immediately to Terra High when the task broadens beyond Luna but remains bounded. Escalate directly to Sol High when one high-risk signal appears, several moderate signals combine into architectural uncertainty, or the spec itself needs revision. Return a compact escalation packet: observed scope, evidence, unresolved questions, risk, and recommended next tier. Do not repeat the same work in both lanes.
+Raise Luna Medium to Luna Max when only reasoning depth increases and the lane stays narrow. Escalate to Terra High when the task broadens but remains bounded. Escalate to Sol Low when a material decision appears or the spec itself needs revision. Return a compact escalation packet: observed scope, evidence, unresolved questions, and risk. Do not recommend Medium or High before Low evaluates the decision, and do not repeat the same work in both lanes.
 
 During execution, escalate on newly discovered cross-cutting impact, failed assumptions, nondeterminism, or inability to define a decisive test after one focused investigation cycle.
 
-The orchestrator stays in the Sol family and owns the specification, routing, synthesis, and any materially different product or architecture decision. Use high reasoning only when consequential signals justify it.
+The orchestrator role owns routing and synthesis. Sol owns materially different product or architecture decisions when escalated; use high reasoning only when consequential signals justify it.
 
-Keep the Sol root thin: consume capsules, escalation packets, and completion packets instead of full skill bodies, transcripts, or raw command output. While delegated ownership is active, do not repeat the worker's investigation or poll its process unless failure, conflicting evidence, or a material decision requires intervention. Integration and final verification may run after merged changes or shared inputs invalidate the worker's earlier evidence.
+Keep every root thin: consume capsules, escalation packets, and completion packets instead of full skill bodies, transcripts, or raw command output. While delegated ownership is active, do not repeat the worker's investigation or poll its process unless failure, conflicting evidence, or a material decision requires intervention. Integration and final verification may run after merged changes or shared inputs invalidate the worker's earlier evidence.
 
 ## Codex spawn enforcement
 

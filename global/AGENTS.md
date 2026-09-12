@@ -23,6 +23,19 @@
 - Prefer updating or superseding an existing fact over adding a duplicate or contradiction.
 - Keep repository or domain-specific knowledge with its owning repository or knowledge source.
 
+## Deterministic execution boundaries
+
+- If no semantic decision exists between operations, do not insert a model inference between them. An agent reasons until a decision boundary; a deterministic runner executes and waits between decision boundaries.
+- Preserve commands defined by an authoritative project instruction exactly in purpose, executable, arguments, working directory, and required environment. The global harness may change only the execution mechanics used to wait, capture output, and report terminal status.
+- When the installed blocking runner is available, gates, test suites, full builds, restores or installs that may run long, migrations, Docker lifecycle checks, integrated validation scripts, and any command that would otherwise require polling MUST use it.
+- Starting a process and repeatedly asking for status through model/tool turns is forbidden when the blocking runner is available. The runner owns waiting through `completed`, `failed`, or `timeout` and returns one compact structured terminal result.
+- Keep stdout, stderr, run state, and result files in the runner's machine-local runtime directory. Return bounded summaries and paths by default; inspect only a targeted tail or range when failure analysis needs it.
+- Operational run state is not durable project documentation. Never place runtime logs, state, credentials, tokens, or secrets in a repository merely to make them accessible to an agent.
+- Small read-only commands such as focused search, status, diff statistics, bounded file reads, and version checks may run directly.
+- Mechanical finalization consumes an explicit structured manifest derived from the current authoritative instruction. It must not invent project-specific paths or actions, and staging or commit requires both manifest intent and explicit runtime authorization.
+
+The installed portable interfaces are `~/.agentic-harness/bin/agentic-run.ps1` and `~/.agentic-harness/bin/agentic-finalize.ps1`. Adapters may expose a more native invocation, but must preserve these semantics.
+
 ## Session lifecycle
 
 - Continue the same thread or session while working on the same coherent unit of work.
@@ -110,6 +123,10 @@ The Coder profile defines the software-engineering role. It is independent from 
 - A skill defines the procedure for work, not which agent owns it. Discovering or invoking a skill does not require the orchestrator to load its full body.
 - After delegation, the worker that owns a stage reads the authoritative skill and only the references needed for that stage. Return compact evidence and decisions instead of propagating full skill bodies, transcripts, or raw logs.
 - Do not bind roles to providers or model names. Runtime adapters own runtime-specific routing and configuration.
+- Treat the root orchestrator as a role and operational control plane, never as a fixed model identity. Root-model selection is a runtime routing decision, and an explicit user override wins.
+- Route deterministic execution through the installed blocking runner when available. The project remains authoritative for what command or finalization is required; the global harness controls only efficient execution mechanics.
+- After review approval, the verifier owns the final gate and its lifecycle through a terminal runner result. The root must not resume manual polling.
+- When a reviewer finding is accepted, correction ownership returns to the existing implementer or writer. Accepting the decision does not transfer mechanical execution to the root.
 
 ### Definition of done
 
@@ -141,7 +158,8 @@ The Coder profile defines the software-engineering role. It is independent from 
 
 ### Runtime-specific routing
 
-- Treat root context as premium. The primary Sol agent is a thin control plane for intake, decomposition, specification ownership, routing, consequential decisions, synthesis, and final acceptance; move noisy or mechanical execution out of the root when delegation has a material net gain.
+- Treat root context as premium. The orchestrator is a role, not a synonym for Sol. Select the root model for the work; an explicit user model choice always wins.
+- Prefer GPT-5.6 Luna Medium as root for clear procedural or recurring workflows, implementation against an authoritative spec or manifest, and `/execute`. The root remains a thin operational control plane for intake, decomposition, routing, synthesis, and acceptance.
 - The harness explicitly authorizes and instructs the primary Codex orchestrator to decide automatically whether to delegate each eligible activity; the user does not need to request subagents in every task or skill invocation.
 - Apply that decision after decomposing the work by responsibility. Prefer bounded Luna scouts, implementers, verifiers, or reviewers when separate backend, frontend, infrastructure, test, or investigation surfaces can be isolated and the expected token, context, or latency savings exceed handoff and synthesis cost.
 - Keep direct execution for microtasks and tightly coupled work whose handoff would cost more than it saves. A skill invocation does not disable delegation unless the skill explicitly requires direct execution or forbids subagents.
@@ -149,15 +167,18 @@ The Coder profile defines the software-engineering role. It is independent from 
 - Once a stage is delegated, do not shadow-execute its investigation, skill reading, checks, or process polling in the root. Resume that surface only for failure, escalation, conflicting evidence, or a material decision.
 - The worker that starts a long-running build, test, gate, or similar process owns its waiting and polling through completion and returns a compact completion packet rather than raw logs.
 - Codex may use its configured Sol, Luna, and Terra routes. These model names belong to this adapter, never to the Coder profile.
-- Keep orchestration and specification on GPT-5.6 Sol with proportional reasoning: low for simple work, medium for bounded synthesis, and high only for consequential work.
-- Delegate to Luna Medium only when cheaper execution or context isolation is expected to outweigh spawn and synthesis overhead.
-- Use Luna Max for narrow deep reasoning, Terra High for broader bounded complexity, and Sol High for consequential judgment.
+- Use Luna Max when the authorized problem remains narrow but needs substantially deeper local reasoning or difficult bounded investigation. Use Terra High when complexity broadens across files, components, or bounded surfaces without introducing a material product, architecture, security, data, or compatibility decision.
+- Route material or consequential decisions to Sol as decision authority through `architect_escalation`; do not make Sol the permanent mechanical executor. Unless the user explicitly overrides the tier, every first Sol escalation MUST use Sol Low, including high-risk categories. Do not select Sol Medium or High prospectively from the task category alone.
+- Sol Medium requires an evidence-backed insufficiency packet from Sol Low identifying the unresolved decision, missing synthesis or ambiguity, and why another Low pass or more evidence is insufficient. Sol High likewise requires an insufficiency packet from Sol Medium identifying the exceptional remaining risk or ambiguity. Availability, perceived difficulty, context size, or a free budget never justifies skipping a rung.
+- MUST escalate to Sol for conflict between authoritative instructions and repository reality, product or architecture decisions, non-mechanical auth/security/permission choices, ambiguous or consequential data integrity/migration decisions, important public API or compatibility changes, scope/release expansion, materially contradictory evidence, material reviewer findings without an obvious accepted correction, or required human authorization.
+- MUST NOT escalate merely to read or edit files under a clear spec, change config or Markdown, run tests/builds, wait for a process, inspect Git, generate mechanical metadata, apply a decision already made, or implement an accepted mechanical correction.
 - Treat the configured default subagent model as a fallback, not enforcement. Every Codex spawn must explicitly set `model` and `reasoning_effort` from the routing rubric.
 - A spawn that selects a model different from the primary agent must use `fork_turns: "none"` or a positive limited turn count and pass the bounded context in its task. Never use `fork_turns: "all"` for Luna or Terra because a full-history fork inherits the primary Sol model.
 - Use a Sol subagent only for consequential judgment that cannot remain with the primary orchestrator or a lower tier. Record the concrete ambiguity, risk, or cross-domain decision that required Sol; availability or a free concurrency slot is not sufficient.
 - Escalate before implementation when the selected lane is clearly insufficient; do not require a failed attempt.
 - Follow `sdd-workflow/references/model-routing.md` for the detailed rubric.
 - Run at most three subagents concurrently while the installed Codex configuration retains that limit.
+- Use `~/.agentic-harness/bin/agentic-run.ps1` for long deterministic commands and `~/.agentic-harness/bin/agentic-finalize.ps1` for manifest-authorized mechanical finalization. Do not repeatedly call `write_stdin` or status tools to ask whether a process has finished when the blocking runner is available.
 
 ### Runtime activation and current state
 

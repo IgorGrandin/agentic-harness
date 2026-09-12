@@ -55,6 +55,8 @@ Assert-SameFile -Expected (Join-Path $repoRoot 'profiles\knowledge\PROFILE.md') 
 Assert-SameFile -Expected (Join-Path $repoRoot 'profiles\home\PROFILE.md') -Actual (Join-Path $testHarnessHome 'profiles\home\PROFILE.md')
 Assert-SameFile -Expected (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-local') -Actual (Join-Path $testHarnessHome 'adapters\ollama\Modelfile.qwen-local')
 Assert-SameFile -Expected (Join-Path $repoRoot 'mcp\registry.json') -Actual (Join-Path $testHarnessHome 'mcp\registry.json')
+Assert-SameFile -Expected (Join-Path $repoRoot 'bin\agentic-run.ps1') -Actual (Join-Path $testHarnessHome 'bin\agentic-run.ps1')
+Assert-SameFile -Expected (Join-Path $repoRoot 'bin\agentic-finalize.ps1') -Actual (Join-Path $testHarnessHome 'bin\agentic-finalize.ps1')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testHarnessHome 'global\memory-bank\INDEX.md')
 
 $codexInstructions = Get-Content -Raw -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
@@ -64,6 +66,12 @@ foreach ($marker in @(
     'Assistant, Knowledge, and Home remain known platform profiles but are not activated',
     '`CONNECTED` through `~/.codex/memory-bank/`',
     'Sol, Luna, and Terra are `CONFIGURED`',
+    'The orchestrator is a role, not a synonym for Sol',
+    'Prefer GPT-5.6 Luna Medium as root',
+    'every first Sol escalation MUST use Sol Low',
+    'Sol Medium requires an evidence-backed insufficiency packet from Sol Low',
+    'repeatedly call `write_stdin`',
+    'Deterministic execution boundaries',
     'Every Codex spawn must explicitly set `model` and `reasoning_effort`',
     'Never use `fork_turns: "all"` for Luna or Terra',
     'Use a Sol subagent only for consequential judgment',
@@ -91,7 +99,13 @@ foreach ($marker in @(
 $installedModelRouting = Get-Content -Raw -LiteralPath (Join-Path $testAgentsHome 'skills\sdd-workflow\references\model-routing.md')
 foreach ($marker in @(
     'Consequentiality selects who must make a decision',
-    'Keep the Sol root thin',
+    'Keep every root thin',
+    'The orchestrator is a role, not a model identity',
+    'Prefer Luna Medium root',
+    'Sol Low',
+    'MUST NOT skip rungs',
+    'Medium is allowed only after Low',
+    'High is allowed only after Medium',
     'fork_turns: "none"',
     'Never use `fork_turns: "all"` when selecting Luna or Terra'
 )) {
