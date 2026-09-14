@@ -15,6 +15,8 @@
 ### Runtime-specific routing
 
 - Treat root context as premium. The orchestrator is a role, not a synonym for Sol. Select the root model for the work; an explicit user model choice always wins.
+- On `/execute`, the root performs only bootstrap: resolve the authoritative project root and explicit workflow source, then invoke `~/.agentic-harness/bin/agentic-execute.ps1`. Once GRAPH mode is selected, the LangGraph runtime owns all dispatch, checkpoint resume, semantic Codex CLI calls, runner waits, review/correction loops, and finalization. The root does not poll or re-orchestrate graph nodes.
+- Use DIRECT mode only for an explicit ad-hoc executable and explicit arguments. The dispatcher never infers a project command, gate, source file, or dependency.
 - Prefer GPT-5.6 Luna Medium as root for clear procedural or recurring workflows, implementation against an authoritative spec or manifest, and `/execute`. The root remains a thin operational control plane for intake, decomposition, routing, synthesis, and acceptance.
 - The harness explicitly authorizes and instructs the primary Codex orchestrator to decide automatically whether to delegate each eligible activity; the user does not need to request subagents in every task or skill invocation.
 - Apply that decision after decomposing the work by responsibility. Prefer bounded Luna scouts, implementers, verifiers, or reviewers when separate backend, frontend, infrastructure, test, or investigation surfaces can be isolated and the expected token, context, or latency savings exceed handoff and synthesis cost.
@@ -34,7 +36,7 @@
 - Escalate before implementation when the selected lane is clearly insufficient; do not require a failed attempt.
 - Follow `sdd-workflow/references/model-routing.md` for the detailed rubric.
 - Run at most three subagents concurrently while the installed Codex configuration retains that limit.
-- Use `~/.agentic-harness/bin/agentic-run.ps1` for long deterministic commands and `~/.agentic-harness/bin/agentic-finalize.ps1` for manifest-authorized mechanical finalization. Do not repeatedly call `write_stdin` or status tools to ask whether a process has finished when the blocking runner is available.
+- Use `~/.agentic-harness/bin/agentic-run.ps1` for long deterministic commands and `~/.agentic-harness/bin/agentic-finalize.ps1` for manifest-authorized mechanical finalization. `agentic-execute.ps1` routes these inside GRAPH mode. Do not repeatedly call `write_stdin` or status tools to ask whether a process has finished when the blocking runner is available.
 
 ### Runtime activation and current state
 

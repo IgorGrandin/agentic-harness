@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "task": "fixture-finalize",
+  "repositoryRoot": ".",
+  "capture": { "branch": true, "head": true, "status": true, "diffNumstat": false, "showNumstat": false },
+  "commit": { "enabled": false, "paths": [], "message": "" },
+  "roundLog": { "enabled": false, "path": "", "record": {} }
+}

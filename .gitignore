@@ -13,6 +13,9 @@ sessions/
 *.sqlite-shm
 *.sqlite-wal
 *.jsonl
+__pycache__/
+**/__pycache__/
+*.pyc
 .codex-global-state.json*
 installation_id
 .sandbox/

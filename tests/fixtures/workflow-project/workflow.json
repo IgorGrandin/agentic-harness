@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "workflow-definition",
+  "sourceFiles": [
+    "preflight.md",
+    "implementation.md",
+    "review.md",
+    "fake-gate.ps1",
+    "finalize.json"
+  ],
+  "nodes": [
+    { "id": "PREFLIGHT", "type": "agent", "role": "scout", "source": "preflight.md" },
+    { "id": "IMPLEMENT", "type": "agent", "role": "implementer", "source": "implementation.md" },
+    { "id": "REVIEW", "type": "decision", "role": "reviewer", "source": "review.md" },
+    { "id": "CORRECTION", "type": "agent", "role": "implementer", "source": "implementation.md" },
+    { "id": "GATE", "type": "command", "phase": "gate", "command": { "filePath": "fake-gate.ps1", "arguments": [], "cwd": "." } },
+    { "id": "FINALIZE", "type": "finalization", "finalization": { "manifestPath": "finalize.json", "allowWrite": false, "allowCommit": false } }
+  ],
+  "edges": [
+    "START->PREFLIGHT",
+    "PREFLIGHT->IMPLEMENT",
+    "IMPLEMENT->REVIEW",
+    "REVIEW(FINDING)->CORRECTION",
+    "CORRECTION->REVIEW",
+    "REVIEW(APPROVED)->GATE",
+    "GATE(GREEN)->FINALIZE"
+  ],
+  "policy": {
+    "reviewBeforeGate": true,
+    "gateFailureBlocksFinalization": true,
+    "rawLogsExternal": true
+  },
+  "routing": {
+    "defaultModel": "gpt-5.6-luna",
+    "defaultReasoning": "medium"
+  }
+}

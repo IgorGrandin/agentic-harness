@@ -44,6 +44,16 @@ $required = @(
     'scripts\verify.ps1'
     ,'bin\agentic-run.ps1'
     ,'bin\agentic-finalize.ps1'
+    ,'bin\workflow-compile.ps1'
+    ,'bin\workflow-validate.ps1'
+    ,'bin\workflow-graph.ps1'
+    ,'bin\agentic-execute.ps1'
+    ,'runtime\__init__.py'
+    ,'runtime\langgraph_runtime.py'
+    ,'runtime\requirements-langgraph.lock'
+    ,'runtime\requirements-langgraph.in'
+    ,'runtime\generate-langgraph-lock.ps1'
+    ,'pyproject.toml'
 )
 foreach ($relative in $required) {
     if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $relative))) { $errors.Add("Missing required path: $relative") }
@@ -91,6 +101,7 @@ $secretPatterns = @(
     '(?im)^\s*(?:api[_-]?key|access[_-]?token|password|secret)\s*=\s*["''][^"''${}<>]{8,}["'']\s*$'
 )
 
+$localArtifactPath = '(?i)(^|[\\/])\.test-output([\\/]|$)|(^|[\\/])portable-backups([\\/]|$)'
 $files = Get-ChildItem -LiteralPath $repoRoot -Force |
     Where-Object { $_.Name -notin @('.git', '.test-output', 'portable-backups') } |
     ForEach-Object {
@@ -114,7 +125,7 @@ foreach ($jsonFile in ($files | Where-Object { $_.Extension -eq '.json' })) {
     catch { $relative = $jsonFile.FullName.Substring($repoRoot.Length).TrimStart('\', '/'); $errors.Add("Invalid JSON in ${relative}: $($_.Exception.Message)") }
 }
 
-foreach ($script in (Get-ChildItem -LiteralPath $repoRoot -Filter '*.ps1' -File -Recurse | Where-Object { $_.FullName -notmatch '\\.test-output\\' })) {
+foreach ($script in (Get-ChildItem -LiteralPath $repoRoot -Filter '*.ps1' -File -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $localArtifactPath })) {
     $tokens = $null
     $parseErrors = $null
     [void][Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$parseErrors)

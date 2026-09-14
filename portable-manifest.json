@@ -38,10 +38,12 @@
       "global",
       "skills",
       "config",
-      "bin"
+      "bin",
+      "runtime"
     ],
     "files": [
-      "portable-manifest.json"
+      "portable-manifest.json",
+      "pyproject.toml"
     ]
   },
   "memoryFiles": [
