@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "workflow-registry",
+  "aliases": {
+    "/execute": "execute",
+    "source-command-execute": "execute"
+  },
+  "workflows": {
+    "execute": {
+      "mode": "GRAPH"
+    }
+  }
+}

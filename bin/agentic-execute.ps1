@@ -2,6 +2,7 @@
 param(
     [ValidateSet('resolve','start','resume','inspect')][string]$Action = 'resolve',
     [string]$ProjectRoot = (Get-Location).Path,
+    [string]$WorkflowId = '',
     [string]$WorkflowPath = '',
     [string]$RunId = '',
     [string]$FilePath = '',
@@ -38,10 +39,20 @@ if (-not $RunId) { $RunId = [Guid]::NewGuid().ToString('N') }
 if ($RunId -notmatch '^[A-Za-z0-9._-]+$') { throw 'RunId contains unsafe path characters.' }
 $harnessRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $workflow = Resolve-ProjectPath $WorkflowPath
+$registered = $false
+$resolvedWorkflowId = ''
+if ($WorkflowId) {
+    if ($WorkflowPath) { throw 'Registered workflow cannot be combined with WorkflowPath.' }
+    $resolved = & (Join-Path $harnessRoot 'bin\workflow-resolve.ps1') -ProjectRoot $project -Alias $WorkflowId | ConvertFrom-Json
+    if ($resolved.status -ne 'RESOLVED') { throw "Registered workflow resolution failed: $($resolved.error)" }
+    $workflow = [string]$resolved.workflowPath
+    $resolvedWorkflowId = [string]$resolved.workflowId
+    $registered = $true
+}
 $mode = if ($workflow) { 'GRAPH' } else { 'DIRECT' }
 
 if ($Action -eq 'resolve') {
-    [ordered]@{ status = 'RESOLVED'; mode = $mode; projectRoot = $project; workflowPath = $workflow; runId = $RunId } | Write-Compact
+    [ordered]@{ status = 'RESOLVED'; mode = $mode; registered = $registered; workflowId = $resolvedWorkflowId; projectRoot = $project; workflowPath = $workflow; runId = $RunId } | Write-Compact
     exit 0
 }
 if ($Action -eq 'inspect') {

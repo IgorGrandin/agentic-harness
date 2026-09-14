@@ -8,6 +8,8 @@ $dispatch = Join-Path $repo 'bin\agentic-execute.ps1'
 $pwsh = (Get-Process -Id $PID).Path
 $runtime = Join-Path ([IO.Path]::GetTempPath()) ('agentic-harness-dispatch-' + [Guid]::NewGuid().ToString('N'))
 try {
+    $registered = & $pwsh -NoProfile -File $dispatch -Action resolve -ProjectRoot $fixture -WorkflowId source-command-execute -RunId registered-resolve -RuntimeRoot $runtime | ConvertFrom-Json
+    if ($registered.status -ne 'RESOLVED' -or $registered.mode -ne 'GRAPH' -or $registered.registered -ne $true) { throw 'Registered workflow resolution contract failed.' }
     $graph = & $pwsh -NoProfile -File $dispatch -Action resolve -ProjectRoot $fixture -WorkflowPath workflow.json -RunId graph-resolve -RuntimeRoot $runtime | ConvertFrom-Json
     if ($graph.status -ne 'RESOLVED' -or $graph.mode -ne 'GRAPH' -or -not $graph.workflowPath.EndsWith('workflow.json')) { throw 'GRAPH resolution contract failed.' }
     $direct = & $pwsh -NoProfile -File $dispatch -Action resolve -ProjectRoot $fixture -RunId direct-resolve -RuntimeRoot $runtime | ConvertFrom-Json

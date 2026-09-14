@@ -31,14 +31,31 @@ if ($capture.showNumstat -eq $true) { $result.showNumstat = @((Invoke-Git -Argum
 $roundLogProperty = $manifest.PSObject.Properties['roundLog']
 if ($null -ne $roundLogProperty -and $manifest.roundLog.enabled -eq $true) {
     if (-not $AllowWrite) { throw 'Manifest requests a round-log append, but -AllowWrite was not explicitly supplied.' }
-    $roundLogPath = [IO.Path]::GetFullPath((Join-Path $repositoryRoot ([string]$manifest.roundLog.path)))
-    $repositoryPrefix = $repositoryRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
-    if (-not $roundLogPath.StartsWith($repositoryPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Round-log path escapes repository.' }
+    $roundLog = $manifest.roundLog
+    if ($roundLog.PSObject.Properties['external'] -and $roundLog.external -eq $true) {
+        if (-not ($roundLog.PSObject.Properties['allowExternal'] -and $roundLog.allowExternal -eq $true)) { throw 'External round-log append requires explicit allowExternal intent.' }
+        $expanded = [Environment]::ExpandEnvironmentVariables([string]$roundLog.path)
+        if ([IO.Path]::IsPathRooted($expanded) -eq $false) { throw 'External round-log path must resolve to an absolute path.' }
+        $roundLogPath = [IO.Path]::GetFullPath($expanded)
+        $allowed = @($roundLog.allowedRoots | ForEach-Object { [IO.Path]::GetFullPath([Environment]::ExpandEnvironmentVariables([string]$_)).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar })
+        if ($allowed.Count -eq 0 -or -not ($allowed | Where-Object { $roundLogPath.StartsWith($_, [StringComparison]::OrdinalIgnoreCase) })) { throw 'External round-log path is outside the declared allowlist.' }
+    } else {
+        $roundLogPath = [IO.Path]::GetFullPath((Join-Path $repositoryRoot ([string]$roundLog.path)))
+        $repositoryPrefix = $repositoryRoot.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+        if (-not $roundLogPath.StartsWith($repositoryPrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Round-log path escapes repository.' }
+    }
     if ($PSCmdlet.ShouldProcess($roundLogPath, 'Append manifest round-log record')) {
-        $record = [ordered]@{}
-        foreach ($property in $manifest.roundLog.record.PSObject.Properties) { $record[$property.Name] = $property.Value }
+        $header = [string]$roundLog.header
+        $record = @($roundLog.record.PSObject.Properties | ForEach-Object {
+                if ($_.Value -is [DateTime]) { $_.Value.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture) }
+                elseif ($_.Value -is [DateTimeOffset]) { $_.Value.ToString('yyyy-MM-ddTHH:mm:ssK', [Globalization.CultureInfo]::InvariantCulture) }
+                else { [string]$_.Value }
+            }) -join ';'
+        if ([string]::IsNullOrWhiteSpace($header) -or [string]::IsNullOrWhiteSpace($record) -or $header.Contains("`r") -or $header.Contains("`n") -or $record.Contains("`r") -or $record.Contains("`n")) { throw 'Round-log header and record must each be one non-empty line.' }
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $roundLogPath) | Out-Null
-        [pscustomobject]$record | Export-Csv -LiteralPath $roundLogPath -Append -NoTypeInformation
+        $utf8 = [Text.UTF8Encoding]::new($false)
+        if (-not (Test-Path -LiteralPath $roundLogPath -PathType Leaf)) { [IO.File]::WriteAllText($roundLogPath, "$header`n", $utf8) }
+        [IO.File]::AppendAllText($roundLogPath, "$record`n", $utf8)
         $result.roundLog = $roundLogPath
     }
 }

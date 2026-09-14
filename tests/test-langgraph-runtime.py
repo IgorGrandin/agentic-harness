@@ -136,6 +136,19 @@ class LangGraphRuntimeTests(unittest.TestCase):
         model, reasoning = runtime._routing({"id": "ARCH", "role": "architect_escalation"}, {"routing": {"defaultModel": "gpt-5.6-luna", "defaultReasoning": "high"}})
         self.assertEqual((model, reasoning), ("gpt-5.6-sol", "low"))
 
+    def test_required_observed_evidence_blocks_until_present(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            value = manifest(root)
+            value["policy"]["requiredEvidence"] = [{"node": "IMPLEMENT", "id": "discriminant", "type": "observed"}]
+            runtime.validate_manifest(value)
+            state = {"runtime_root": str(root), "outputs": {"IMPLEMENT": {"evidence": [{"id": "discriminant", "type": "reasoned"}]} }}
+            node = value["nodes"][-1]
+            self.assertEqual(runtime._finalize(value, node, state, False, False), "BLOCKED")
+            state["outputs"]["IMPLEMENT"]["evidence"][0]["type"] = "observed"
+            with patch.object(runtime.subprocess, "run", return_value=type("Result", (), {"returncode": 0, "stdout": "", "stderr": ""})()):
+                self.assertEqual(runtime._finalize(value, node, state, False, False), "DONE")
+
 
 if __name__ == "__main__":
     unittest.main()

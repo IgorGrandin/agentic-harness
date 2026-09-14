@@ -48,6 +48,7 @@ $required = @(
     ,'bin\workflow-validate.ps1'
     ,'bin\workflow-graph.ps1'
     ,'bin\agentic-execute.ps1'
+    ,'bin\workflow-resolve.ps1'
     ,'runtime\__init__.py'
     ,'runtime\langgraph_runtime.py'
     ,'runtime\requirements-langgraph.lock'

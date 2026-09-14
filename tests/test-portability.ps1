@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([string]$BootstrapPython = '')
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -25,14 +25,14 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'fixtures\existing-config.toml')
 [IO.File]::WriteAllText((Join-Path $testCodexHome 'auth.json'), '{"must":"stay local"}', [Text.UTF8Encoding]::new($false))
 
 $beforeWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -WhatIf 6>$null
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -BootstrapPython $BootstrapPython -WhatIf 6>$null
 $afterWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
 if ($beforeWhatIf.Hash -ne $afterWhatIf.Hash) { throw '-WhatIf mutated AGENTS.md.' }
 if (Test-Path -LiteralPath $testHarnessHome) { throw '-WhatIf created the global harness home.' }
 if (Test-Path -LiteralPath $testGeminiHome) { throw '-WhatIf created the Antigravity home.' }
 if (Test-Path -LiteralPath $testCursorHome) { throw '-WhatIf created the Cursor home.' }
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -BootstrapPython $BootstrapPython
 if (-not (Test-Path -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md') -PathType Leaf)) { throw 'Global install did not apply the Antigravity adapter.' }
 
 function Assert-SameFile {
@@ -57,6 +57,8 @@ Assert-SameFile -Expected (Join-Path $repoRoot 'adapters\ollama\Modelfile.qwen-l
 Assert-SameFile -Expected (Join-Path $repoRoot 'mcp\registry.json') -Actual (Join-Path $testHarnessHome 'mcp\registry.json')
 Assert-SameFile -Expected (Join-Path $repoRoot 'bin\agentic-run.ps1') -Actual (Join-Path $testHarnessHome 'bin\agentic-run.ps1')
 Assert-SameFile -Expected (Join-Path $repoRoot 'bin\agentic-finalize.ps1') -Actual (Join-Path $testHarnessHome 'bin\agentic-finalize.ps1')
+Assert-SameFile -Expected (Join-Path $repoRoot 'bin\workflow-resolve.ps1') -Actual (Join-Path $testHarnessHome 'bin\workflow-resolve.ps1')
+Assert-SameFile -Expected (Join-Path $repoRoot 'workflows\registry.json') -Actual (Join-Path $testHarnessHome 'workflows\registry.json')
 Assert-SameFile -Expected (Join-Path $repoRoot 'global\memory-bank\INDEX.md') -Actual (Join-Path $testHarnessHome 'global\memory-bank\INDEX.md')
 
 $codexInstructions = Get-Content -Raw -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')

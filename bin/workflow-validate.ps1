@@ -47,6 +47,13 @@ try {
             if ($sources -notcontains ([string]$node.finalization.manifestPath).Replace('\','/')) { throw "INVALID_MANIFEST: finalization manifest is undeclared: $id" }
         }
     }
+    if ($m.policy.PSObject.Properties['requiredEvidence']) {
+        foreach ($requirement in @($m.policy.requiredEvidence)) {
+            if ([string]::IsNullOrWhiteSpace([string]$requirement.id) -or [string]::IsNullOrWhiteSpace([string]$requirement.node) -or [string]$requirement.type -ne 'observed') { throw 'INVALID_MANIFEST: requiredEvidence entries require node, id, and type=observed' }
+            $requiredNode = @($m.nodes | Where-Object { $_.id -eq [string]$requirement.node })
+            if ($requiredNode.Count -ne 1 -or $requiredNode[0].type -notin @('agent','decision')) { throw "INVALID_MANIFEST: requiredEvidence node is not semantic: $($requirement.node)" }
+        }
+    }
     if (($ids | Sort-Object -Unique).Count -ne $ids.Count) { throw 'INVALID_MANIFEST: duplicate node id' }
     $edges = @($m.edges | ForEach-Object { Get-EdgeParts $_ })
     foreach ($edge in $edges) {

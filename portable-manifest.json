@@ -39,6 +39,7 @@
       "skills",
       "config",
       "bin",
+      "workflows",
       "runtime"
     ],
     "files": [

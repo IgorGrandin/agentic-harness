@@ -97,6 +97,12 @@ def validate_manifest(manifest: dict[str, Any]) -> None:
     policy = manifest["policy"]
     if not isinstance(policy, dict) or any(policy.get(key) is not True for key in ("reviewBeforeGate", "gateFailureBlocksFinalization", "rawLogsExternal")):
         raise ValueError("manifest policy does not enforce execution invariants")
+    for requirement in policy.get("requiredEvidence", []):
+        if not isinstance(requirement, dict) or not isinstance(requirement.get("node"), str) or not isinstance(requirement.get("id"), str) or requirement.get("type") != "observed":
+            raise ValueError("requiredEvidence entries must declare node, id, and type=observed")
+        required_node = next((node for node in nodes if node["id"] == requirement["node"]), None)
+        if required_node is None or required_node["type"] not in {"agent", "decision"}:
+            raise ValueError(f"requiredEvidence node is not semantic: {requirement['node']}")
     gate_ids = {node["id"] for node in nodes if node["type"] == "command" and (node.get("phase") == "gate" or "gate" in node["id"].lower())}
     reviews = {node["id"] for node in nodes if node["type"] == "decision" and ("review" in node.get("role", "").lower() or "review" in node["id"].lower())}
     finals = {node["id"] for node in nodes if node["type"] == "finalization"}
@@ -174,7 +180,7 @@ def _decision_schema(node: dict[str, Any], manifest: dict[str, Any]) -> dict[str
         outcomes.add("DONE")
     if not outcomes:
         raise ValueError(f"semantic node has no declared outcome: {node['id']}")
-    return {
+    schema = {
         "type": "object",
         "additionalProperties": False,
         "required": ["decision", "summary", "artifacts"],
@@ -184,6 +190,10 @@ def _decision_schema(node: dict[str, Any], manifest: dict[str, Any]) -> dict[str
             "artifacts": {"type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 512}},
         },
     }
+    if any(item.get("node") == node["id"] for item in manifest.get("policy", {}).get("requiredEvidence", [])):
+        schema["required"].append("evidence")
+        schema["properties"]["evidence"] = {"type": "array", "maxItems": 50, "items": {"type": "object", "additionalProperties": False, "required": ["id", "type"], "properties": {"id": {"type": "string", "maxLength": 256}, "type": {"type": "string", "enum": ["observed", "reasoned"]}}}}
+    return schema
 
 
 def _parse_jsonl(text: str, allowed_decisions: set[str]) -> dict[str, Any]:
@@ -206,12 +216,14 @@ def _parse_jsonl(text: str, allowed_decisions: set[str]) -> dict[str, Any]:
         value = json.loads(messages[-1])
     except json.JSONDecodeError as error:
         raise ValueError("Codex final message is not JSON") from error
-    if not isinstance(value, dict) or set(value) != {"decision", "summary", "artifacts"}:
+    if not isinstance(value, dict) or set(value) - {"decision", "summary", "artifacts", "evidence"} or not {"decision", "summary", "artifacts"}.issubset(value):
         raise ValueError("Codex response does not match the decision schema")
     if value["decision"] not in allowed_decisions or not isinstance(value["summary"], str) or len(value["summary"]) > 2000:
         raise ValueError("Codex response decision or summary is invalid")
     if not isinstance(value["artifacts"], list) or len(value["artifacts"]) > 20 or any(not isinstance(item, str) or len(item) > 512 for item in value["artifacts"]):
         raise ValueError("Codex response artifacts are invalid")
+    if "evidence" in value and (not isinstance(value["evidence"], list) or any(not isinstance(item, dict) or item.get("type") not in {"observed", "reasoned"} or not isinstance(item.get("id"), str) for item in value["evidence"])):
+        raise ValueError("Codex response evidence is invalid")
     return value
 
 
@@ -261,6 +273,11 @@ def _command_result(manifest: dict[str, Any], node: dict[str, Any], state: Graph
 
 
 def _finalize(manifest: dict[str, Any], node: dict[str, Any], state: GraphState, allow_write: bool, allow_commit: bool) -> str:
+    for requirement in manifest.get("policy", {}).get("requiredEvidence", []):
+        output = state.get("outputs", {}).get(requirement["node"], {})
+        evidence = output.get("evidence", []) if isinstance(output, dict) else []
+        if not any(item.get("id") == requirement["id"] and item.get("type") == "observed" for item in evidence if isinstance(item, dict)):
+            return "BLOCKED"
     declaration = node["finalization"]
     if declaration.get("allowWrite", False) and not allow_write or declaration.get("allowCommit", False) and not allow_commit:
         return "BLOCKED"

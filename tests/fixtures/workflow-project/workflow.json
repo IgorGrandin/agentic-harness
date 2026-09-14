@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "kind": "workflow-definition",
   "sourceFiles": [
+    ".agentic-harness/workflows.json",
     "preflight.md",
     "implementation.md",
     "review.md",
