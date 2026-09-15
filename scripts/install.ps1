@@ -8,7 +8,6 @@ param(
     [string]$AgentsHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.agents'),
     [string]$CursorHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.cursor'),
     [Alias('PlatformHome')][string]$HarnessHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.agentic-harness'),
-    [string]$BootstrapPython = '',
     [string]$GeminiHome = $(Join-Path ([Environment]::GetFolderPath('UserProfile')) '.gemini'),
     [ValidateSet('Knowledge', 'Home')][string[]]$AntigravityProfile = @(),
     [switch]$SkipConfig
@@ -190,63 +189,6 @@ function Merge-AgentConfig {
     }
 }
 
-function Install-ManagedLangGraphRuntime {
-    param([Parameter(Mandatory = $true)][string]$ManagedRuntimeRoot)
-
-    # A dry run must remain dependency-free: the managed runtime has not been
-    # copied yet and no bootstrap interpreter should be required.
-    if ($WhatIfPreference) { Write-Verbose "Would create and populate managed LangGraph runtime at $ManagedRuntimeRoot"; return }
-    $lockFile = Join-Path $ManagedRuntimeRoot 'requirements-langgraph.lock'
-    $venvRoot = Join-Path $ManagedRuntimeRoot 'python'
-    if (-not (Test-Path -LiteralPath $lockFile -PathType Leaf)) { throw "Missing managed LangGraph lock file: $lockFile" }
-    if ((Get-Content -Raw -LiteralPath $lockFile) -notmatch '(?m)--hash=sha256:') { throw "Managed LangGraph lock is not transitively hash-locked. Generate it in a networked installation phase: pwsh -File runtime\generate-langgraph-lock.ps1 -BootstrapPython <python>." }
-    $bootstrap = if ($BootstrapPython) { Get-Item -LiteralPath $BootstrapPython -ErrorAction Stop } else { Get-Command python -ErrorAction SilentlyContinue }
-    if ($null -eq $bootstrap) { throw 'Python is required to create the managed LangGraph runtime; pass -BootstrapPython with an existing Python 3.11+ executable or install one and rerun install.' }
-    $bootstrapPath = if ($bootstrap.PSObject.Properties['Source']) { $bootstrap.Source } else { $bootstrap.FullName }
-    & $bootstrapPath -c "import sys; assert sys.version_info >= (3, 11), sys.version"
-    if ($LASTEXITCODE -ne 0) { throw 'BootstrapPython must be Python 3.11 or newer.' }
-    $staging = "$venvRoot.staging-$([Guid]::NewGuid().ToString('N'))"
-    $backup = "$venvRoot.rollback-$([Guid]::NewGuid().ToString('N'))"
-    $stagingPython = Join-Path $staging 'Scripts\python.exe'
-    if (-not $PSCmdlet.ShouldProcess($venvRoot, 'Atomically stage and install managed LangGraph runtime')) { return }
-    try {
-        & $bootstrapPath -m venv $staging
-        if ($LASTEXITCODE -ne 0) { throw 'Managed Python staging virtual environment creation failed.' }
-        & $stagingPython -m pip install --disable-pip-version-check --only-binary=:all: --no-cache-dir --progress-bar off --require-hashes --requirement $lockFile
-        if ($LASTEXITCODE -ne 0) { throw 'Locked LangGraph runtime installation failed.' }
-        & $stagingPython -c "import importlib.metadata as m; import langgraph, langgraph.checkpoint.sqlite; assert m.version('langgraph') == '1.2.11'; assert m.version('langgraph-checkpoint-sqlite') == '3.1.1'"
-        if ($LASTEXITCODE -ne 0) { throw 'Managed LangGraph runtime import/version verification failed.' }
-        if (Test-Path -LiteralPath $venvRoot) { Move-Item -LiteralPath $venvRoot -Destination $backup -ErrorAction Stop }
-        try { Move-Item -LiteralPath $staging -Destination $venvRoot -ErrorAction Stop }
-        catch { if (Test-Path -LiteralPath $backup) { Move-Item -LiteralPath $backup -Destination $venvRoot -ErrorAction SilentlyContinue }; throw }
-        if (Test-Path -LiteralPath $backup) { Remove-Item -LiteralPath $backup -Recurse -Force }
-    } catch {
-        if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-        if (-not (Test-Path -LiteralPath $venvRoot) -and (Test-Path -LiteralPath $backup)) { Move-Item -LiteralPath $backup -Destination $venvRoot -ErrorAction SilentlyContinue }
-        throw
-    }
-}
-
-function Install-ManagedRuntimeSource {
-    param(
-        [Parameter(Mandatory = $true)][string]$Source,
-        [Parameter(Mandatory = $true)][string]$Target,
-        [Parameter(Mandatory = $true)][string]$AllowedRoot
-    )
-
-    # The managed venv is a runtime artifact, not portable source. Replacing
-    # `runtime/` wholesale would delete the previous verified venv before the
-    # staged replacement can be installed and rolled back.
-    Assert-ManagedPath -Path $Target -AllowedRoot $AllowedRoot
-    if ($PSCmdlet.ShouldProcess($Target, "Refresh portable runtime source while preserving python")) {
-        New-Item -ItemType Directory -Force -Path $Target | Out-Null
-        foreach ($item in Get-ChildItem -LiteralPath $Source -Force) {
-            if ($item.Name -eq 'python') { continue }
-            Copy-Item -LiteralPath $item.FullName -Destination (Join-Path $Target $item.Name) -Recurse -Force
-        }
-    }
-}
-
 function Remove-ObsoleteArchitectRole {
     param([Parameter(Mandatory = $true)][string]$CodexRoot)
 
@@ -266,16 +208,11 @@ function Remove-ObsoleteArchitectRole {
 $backupRoot = $harnessBackupRoot
 if ($PSCmdlet.ShouldProcess($harnessRoot, 'Create global agentic harness root')) { New-Item -ItemType Directory -Force -Path $harnessRoot | Out-Null }
 foreach ($directory in $manifest.harnessInstall.directories) {
-    if ($directory -eq 'runtime') {
-        Install-ManagedRuntimeSource -Source (Join-Path $repoRoot $directory) -Target (Join-Path $harnessRoot $directory) -AllowedRoot $harnessRoot
-    } else {
-        Install-ManagedDirectory -Source (Join-Path $repoRoot $directory) -Target (Join-Path $harnessRoot $directory) -AllowedRoot $harnessRoot -RelativeBackup $directory
-    }
+    Install-ManagedDirectory -Source (Join-Path $repoRoot $directory) -Target (Join-Path $harnessRoot $directory) -AllowedRoot $harnessRoot -RelativeBackup $directory
 }
 foreach ($file in $manifest.harnessInstall.files) {
     Install-ManagedFile -Source (Join-Path $repoRoot $file) -Target (Join-Path $harnessRoot $file) -AllowedRoot $harnessRoot -RelativeBackup $file
 }
-Install-ManagedLangGraphRuntime -ManagedRuntimeRoot (Join-Path $harnessRoot 'runtime')
 Write-Host "Global agentic harness installed. Backups: $harnessBackupRoot"
 
 $backupRoot = $codexBackupRoot

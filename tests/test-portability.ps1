@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$BootstrapPython = '')
+param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -25,14 +25,14 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'fixtures\existing-config.toml')
 [IO.File]::WriteAllText((Join-Path $testCodexHome 'auth.json'), '{"must":"stay local"}', [Text.UTF8Encoding]::new($false))
 
 $beforeWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -BootstrapPython $BootstrapPython -WhatIf 6>$null
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -WhatIf 6>$null
 $afterWhatIf = Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $testCodexHome 'AGENTS.md')
 if ($beforeWhatIf.Hash -ne $afterWhatIf.Hash) { throw '-WhatIf mutated AGENTS.md.' }
 if (Test-Path -LiteralPath $testHarnessHome) { throw '-WhatIf created the global harness home.' }
 if (Test-Path -LiteralPath $testGeminiHome) { throw '-WhatIf created the Antigravity home.' }
 if (Test-Path -LiteralPath $testCursorHome) { throw '-WhatIf created the Cursor home.' }
 
-& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome -BootstrapPython $BootstrapPython
+& (Join-Path $repoRoot 'scripts\install.ps1') -CodexHome $testCodexHome -CursorHome $testCursorHome -AgentsHome $testAgentsHome -HarnessHome $testHarnessHome -GeminiHome $testGeminiHome
 if (-not (Test-Path -LiteralPath (Join-Path $testGeminiHome 'GEMINI.md') -PathType Leaf)) { throw 'Global install did not apply the Antigravity adapter.' }
 
 function Assert-SameFile {

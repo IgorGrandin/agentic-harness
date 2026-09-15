@@ -2,7 +2,10 @@
 param(
     [Parameter(Mandatory = $true)][string]$ManifestPath,
     [switch]$AllowWrite,
-    [switch]$AllowCommit
+    [switch]$AllowCommit,
+    [string]$GateReceiptPath = '',
+    [string]$RunId = '',
+    [string]$RuntimeRoot = (Join-Path ([IO.Path]::GetTempPath()) 'agentic-harness\execute')
 )
 
 Set-StrictMode -Version Latest
@@ -19,6 +22,16 @@ $manifest = Get-Content -Raw -LiteralPath $manifestFull | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1) { throw "Unsupported finalization manifest schema: $($manifest.schemaVersion)" }
 $repositoryRoot = [IO.Path]::GetFullPath([string]$manifest.repositoryRoot)
 if (-not (Test-Path -LiteralPath (Join-Path $repositoryRoot '.git'))) { throw "Not a Git worktree: $repositoryRoot" }
+
+if ($GateReceiptPath) {
+    $gateReceipt = Get-Content -Raw -LiteralPath ([IO.Path]::GetFullPath($GateReceiptPath)) | ConvertFrom-Json
+    if ($gateReceipt.status -ne 'GREEN') { throw 'FINALIZATION_BLOCKED: gate receipt is not GREEN.' }
+}
+if ($RunId) {
+    $receiptTool = Join-Path $PSScriptRoot 'workflow-receipts.ps1'
+    & (Get-Process -Id $PID).Path -NoProfile -File $receiptTool -Action finalization-guard -ProjectRoot $repositoryRoot -RunId $RunId -RuntimeRoot $RuntimeRoot | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'FINALIZATION_BLOCKED: current tree is not covered by the gate receipt.' }
+}
 
 $capture = $manifest.capture
 $result = [ordered]@{ schemaVersion = 1; task = [string]$manifest.task; repositoryRoot = $repositoryRoot; capturedAt = [DateTimeOffset]::UtcNow.ToString('o') }

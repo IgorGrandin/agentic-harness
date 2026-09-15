@@ -26,7 +26,7 @@ $skillOriginal = [IO.File]::ReadAllText($skillPath)
 New-Item -ItemType Directory -Force -Path $runtime | Out-Null
 try {
     $resolved = & $pwsh -NoProfile -File $resolver -ProjectRoot $project -Alias '/execute' | ConvertFrom-Json
-    if ($resolved.status -ne 'RESOLVED' -or $resolved.mode -ne 'GRAPH' -or $resolved.workflowId -ne 'execute') { throw 'Registered /execute did not resolve to GRAPH.' }
+    if ($resolved.status -ne 'RESOLVED' -or $resolved.mode -ne 'NATIVE' -or $resolved.workflowId -ne 'execute') { throw 'Registered /execute did not resolve to NATIVE.' }
     $missing = & $pwsh -NoProfile -File $resolver -ProjectRoot $project -Alias '/missing' 2>&1
     if ($LASTEXITCODE -eq 0 -or ($missing -join "`n") -notmatch 'FAILED') { throw 'Missing registered alias did not fail closed.' }
     $missingBinding = & $pwsh -NoProfile -File $resolver -ProjectRoot $project -Alias '/execute' -BindingPath '.agentic-harness\missing.json' 2>&1

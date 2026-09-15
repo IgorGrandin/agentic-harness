@@ -66,7 +66,7 @@ try {
         exit 0
     }
     $manifest = [ordered]@{
-        schemaVersion = 1; kind = 'validated-execution-manifest'; fingerprint = $fingerprint; projectRoot = $root
+        schemaVersion = 2; kind = 'native-workflow-contract'; fingerprint = $fingerprint; projectRoot = $root; mode = 'NATIVE'
         sourceFiles = $sourceNames; nodes = @($definition.nodes); edges = @($definition.edges); policy = $definition.policy
         routing = if ($definition.PSObject.Properties['routing']) { $definition.routing } else { [ordered]@{} }
     }

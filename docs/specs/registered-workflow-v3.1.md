@@ -5,7 +5,7 @@
 
 ## Decision
 
-Registered workflow aliases are resolved deterministically by `bin/workflow-resolve.ps1`. The global `workflows/registry.json` maps aliases to logical ids and a project-local `.agentic-harness/workflows.json` maps those ids to a project-relative definition. A registered id always resolves to GRAPH; missing or invalid registry, binding, or definition fails closed. An explicit workflow definition remains GRAPH and an explicit ad-hoc executable remains DIRECT.
+Registered workflow aliases are resolved deterministically by `bin/workflow-resolve.ps1`. The global `workflows/registry.json` maps aliases to logical ids and a project-local `.agentic-harness/workflows.json` maps those ids to a project-relative definition. A registered id always resolves to the NATIVE contract path; missing or invalid registry, binding, or definition fails closed. An explicit workflow definition also uses NATIVE, while an explicit ad-hoc executable remains DIRECT.
 
 The compiler continues to fingerprint only declared project-relative sources. The binding is included explicitly in the definition's `sourceFiles`, so changing a binding or declared skill invalidates the cache without dependency inference.
 
@@ -21,4 +21,4 @@ Round logs may target an external path only when the manifest explicitly declare
 
 - No change to the corporate `source-command-execute/SKILL.md`.
 - No BrixBroker-specific paths or aliases in the global runtime.
-- No redesign of V2.1, V2.5, or the existing V3 graph/checkpoint architecture.
+- No graph engine, Python runtime, SQLite checkpoint, or generated workflow code is part of the architecture.

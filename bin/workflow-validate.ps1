@@ -15,7 +15,7 @@ function Get-EdgeParts($Edge) {
 try {
     $m = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json -Depth 32
     foreach ($name in @('schemaVersion','kind','fingerprint','projectRoot','sourceFiles','nodes','edges','policy')) { if ($null -eq $m.PSObject.Properties[$name]) { throw "INVALID_MANIFEST: missing $name" } }
-    if ($m.schemaVersion -ne 1 -or $m.kind -ne 'validated-execution-manifest' -or [string]$m.fingerprint -notmatch '^[a-f0-9]{64}$') { throw 'INVALID_MANIFEST: unsupported schema, kind, or fingerprint' }
+    if ($m.schemaVersion -ne 2 -or $m.kind -ne 'native-workflow-contract' -or $m.mode -ne 'NATIVE' -or [string]$m.fingerprint -notmatch '^[a-f0-9]{64}$') { throw 'INVALID_MANIFEST: unsupported schema, kind, mode, or fingerprint' }
     if (@($m.sourceFiles).Count -eq 0 -or @($m.nodes).Count -eq 0 -or @($m.edges).Count -eq 0) { throw 'INVALID_MANIFEST: sourceFiles, nodes, and edges are required' }
     $sources = @($m.sourceFiles | ForEach-Object { [string]$_ })
     if (($sources | Where-Object { [IO.Path]::IsPathRooted($_) -or $_ -match '(^|[\\/])\.\.([\\/]|$)' } | Measure-Object).Count -gt 0) { throw 'INVALID_MANIFEST: sourceFiles must be project-relative' }

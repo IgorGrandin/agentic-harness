@@ -1,95 +1,26 @@
 [CmdletBinding()]
 param(
     [ValidateSet('resolve','start','resume','inspect')][string]$Action = 'resolve',
-    [string]$ProjectRoot = (Get-Location).Path,
-    [string]$WorkflowId = '',
-    [string]$WorkflowPath = '',
-    [string]$RunId = '',
-    [string]$FilePath = '',
-    [string[]]$ArgumentList = @(),
-    [string]$WorkingDirectory = '',
-    [string]$RuntimeRoot = (Join-Path ([IO.Path]::GetTempPath()) 'agentic-harness\execute'),
-    [switch]$AllowWrite,
-    [switch]$AllowCommit
+    [string]$ProjectRoot = (Get-Location).Path, [string]$WorkflowId = '', [string]$WorkflowPath = '', [string]$RunId = '',
+    [string]$FilePath = '', [string[]]$ArgumentList = @(), [string]$WorkingDirectory = '',
+    [string]$RuntimeRoot = (Join-Path ([IO.Path]::GetTempPath()) 'agentic-harness\execute'), [switch]$AllowWrite, [switch]$AllowCommit
 )
-Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Stop'
-
-function Write-Compact([Parameter(ValueFromPipeline = $true)]$Value) { process { $Value | ConvertTo-Json -Compress -Depth 16 } }
-function Resolve-ProjectPath([string]$Value) {
-    if (-not $Value) { return '' }
-    $full = [IO.Path]::GetFullPath((Join-Path $project $Value))
-    $prefix = $project.TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
-    if (-not $full.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw "Path escapes ProjectRoot: $Value" }
-    return $full
-}
-function Assert-ExternalRuntimeRoot([string]$Path) {
-    $probe = [IO.DirectoryInfo]::new([IO.Path]::GetFullPath($Path))
-    while ($null -ne $probe) {
-        if (Test-Path -LiteralPath (Join-Path $probe.FullName '.git')) { throw "RuntimeRoot must be outside a Git worktree: $($probe.FullName)" }
-        $probe = $probe.Parent
-    }
-}
-
-$project = [IO.Path]::GetFullPath($ProjectRoot)
-if (-not (Test-Path -LiteralPath $project -PathType Container)) { throw "ProjectRoot was not found: $project" }
-$runtime = [IO.Path]::GetFullPath($RuntimeRoot)
-Assert-ExternalRuntimeRoot $runtime
-if (-not $RunId) { $RunId = [Guid]::NewGuid().ToString('N') }
-if ($RunId -notmatch '^[A-Za-z0-9._-]+$') { throw 'RunId contains unsafe path characters.' }
-$harnessRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$workflow = Resolve-ProjectPath $WorkflowPath
-$registered = $false
-$resolvedWorkflowId = ''
-if ($WorkflowId) {
-    if ($WorkflowPath) { throw 'Registered workflow cannot be combined with WorkflowPath.' }
-    $resolved = & (Join-Path $harnessRoot 'bin\workflow-resolve.ps1') -ProjectRoot $project -Alias $WorkflowId | ConvertFrom-Json
-    if ($resolved.status -ne 'RESOLVED') { throw "Registered workflow resolution failed: $($resolved.error)" }
-    $workflow = [string]$resolved.workflowPath
-    $resolvedWorkflowId = [string]$resolved.workflowId
-    $registered = $true
-}
-$mode = if ($workflow) { 'GRAPH' } else { 'DIRECT' }
-
-if ($Action -eq 'resolve') {
-    [ordered]@{ status = 'RESOLVED'; mode = $mode; registered = $registered; workflowId = $resolvedWorkflowId; projectRoot = $project; workflowPath = $workflow; runId = $RunId } | Write-Compact
-    exit 0
-}
-if ($Action -eq 'inspect') {
-    $checkpoint = Join-Path $runtime (Join-Path 'checkpoints' "$RunId.sqlite")
-    [ordered]@{ status = if (Test-Path -LiteralPath $checkpoint) { 'CHECKPOINT_AVAILABLE' } else { 'NOT_FOUND' }; mode = $mode; runId = $RunId; checkpoint = $checkpoint } | Write-Compact
-    exit 0
-}
-
-if ($mode -eq 'DIRECT') {
-    if ($Action -eq 'resume') { throw 'DIRECT mode has no graph checkpoint; invoke start with an explicit FilePath.' }
-    if (-not $FilePath) { throw 'DIRECT mode requires explicit FilePath; dispatcher never invents a command.' }
-    $cwd = if ($WorkingDirectory) { Resolve-ProjectPath $WorkingDirectory } else { $project }
-    $argumentsFile = Join-Path $runtime (Join-Path 'arguments' "$RunId.json")
-    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $argumentsFile) | Out-Null
-    [IO.File]::WriteAllText($argumentsFile, ($ArgumentList | ConvertTo-Json -Compress), [Text.UTF8Encoding]::new($false))
-    & (Join-Path $harnessRoot 'bin\agentic-run.ps1') -FilePath $FilePath -ArgumentsFile $argumentsFile -WorkingDirectory $cwd -RuntimeRoot $runtime -RunId $RunId -Phase 'direct'
-    exit $LASTEXITCODE
-}
-
-if (-not (Test-Path -LiteralPath $workflow -PathType Leaf)) { throw "Workflow definition was not found: $workflow" }
-$manifestPath = Join-Path $runtime (Join-Path 'manifests' "$RunId.json")
-$cacheRoot = Join-Path $runtime 'workflow-cache'
-if ($Action -eq 'start') {
-    & (Join-Path $harnessRoot 'bin\workflow-compile.ps1') -ProjectRoot $project -WorkflowPath $WorkflowPath -CacheRoot $cacheRoot -OutputPath $manifestPath | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw 'Workflow compilation failed.' }
-} elseif (-not (Test-Path -LiteralPath $manifestPath)) {
-    throw "No compiled manifest exists for run_id=$RunId. Start the workflow before resume."
-}
-& (Join-Path $harnessRoot 'bin\workflow-validate.ps1') -ManifestPath $manifestPath | Out-Null
-if ($LASTEXITCODE -ne 0) { throw 'Workflow manifest validation failed.' }
-$python = Join-Path $harnessRoot 'runtime\python\Scripts\python.exe'
-if (-not (Test-Path -LiteralPath $python -PathType Leaf)) { throw "Managed LangGraph Python is unavailable: $python. Re-run scripts/install.ps1." }
-$checkpoint = Join-Path $runtime (Join-Path 'checkpoints' "$RunId.sqlite")
-$output = Join-Path $runtime (Join-Path 'results' "$RunId.json")
-$invoke = @((Join-Path $harnessRoot 'runtime\langgraph_runtime.py'),'--manifest',$manifestPath,'--run-id',$RunId,'--checkpoint',$checkpoint,'--output',$output,'--runtime-root',(Join-Path $runtime 'logs'))
-if ($Action -eq 'resume') { $invoke += '--resume' }
-if ($AllowWrite) { $invoke += '--allow-write' }
-if ($AllowCommit) { $invoke += '--allow-commit' }
-& $python @invoke
-exit $LASTEXITCODE
+Set-StrictMode -Version Latest; $ErrorActionPreference = 'Stop'
+function Compact { param([Parameter(ValueFromPipeline=$true)]$Value) process { $Value | ConvertTo-Json -Compress -Depth 20 } }
+function Resolve-ProjectPath([string]$Value) { if (-not $Value) { return '' }; $full=[IO.Path]::GetFullPath((Join-Path $project $Value)); $prefix=$project.TrimEnd('\','/')+[IO.Path]::DirectorySeparatorChar; if(-not $full.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){throw "Path escapes ProjectRoot: $Value"}; return $full }
+function Assert-External([string]$Path) { $probe=[IO.DirectoryInfo]::new([IO.Path]::GetFullPath($Path)); while($null -ne $probe){if(Test-Path -LiteralPath (Join-Path $probe.FullName '.git')){throw "RuntimeRoot must be outside a Git worktree: $($probe.FullName)"};$probe=$probe.Parent} }
+$project=[IO.Path]::GetFullPath($ProjectRoot); if(-not(Test-Path -LiteralPath $project -PathType Container)){throw "ProjectRoot was not found: $project"}; $runtime=[IO.Path]::GetFullPath($RuntimeRoot); Assert-External $runtime
+if(-not $RunId){$RunId=[Guid]::NewGuid().ToString('N')}; if($RunId -notmatch '^[A-Za-z0-9._-]+$'){throw 'RunId contains unsafe path characters.'}
+$harnessRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')); $workflow=Resolve-ProjectPath $WorkflowPath; $registered=$false; $resolvedWorkflowId=''
+if($WorkflowId){if($WorkflowPath){throw 'Registered workflow cannot be combined with WorkflowPath.'};$resolved=& (Join-Path $harnessRoot 'bin\workflow-resolve.ps1') -ProjectRoot $project -Alias $WorkflowId | ConvertFrom-Json;if($resolved.status -ne 'RESOLVED'){throw "Registered workflow resolution failed: $($resolved.error)"};$workflow=[string]$resolved.workflowPath;$resolvedWorkflowId=[string]$resolved.workflowId;$registered=$true}
+$mode=if($workflow){'NATIVE'}else{'DIRECT'}
+if($Action -eq 'resolve'){[ordered]@{status='RESOLVED';mode=$mode;registered=$registered;workflowId=$resolvedWorkflowId;projectRoot=$project;workflowPath=$workflow;runId=$RunId}|Compact;exit 0}
+$statePath=Join-Path (Join-Path $runtime $RunId) 'state.json'
+if($Action -eq 'inspect'){$state=if(Test-Path -LiteralPath $statePath){Get-Content -Raw $statePath|ConvertFrom-Json}else{$null};[ordered]@{status=if($null -ne $state){'STATE_AVAILABLE'}else{'NOT_FOUND'};mode=$mode;runId=$RunId;statePath=$statePath;state=$state}|Compact;exit 0}
+if($mode -eq 'DIRECT'){if($Action -eq 'resume'){throw 'DIRECT mode has no resumable workflow state.'};if(-not $FilePath){throw 'DIRECT mode requires explicit FilePath; dispatcher never invents a command.'};$argumentsFile=Join-Path (Join-Path $runtime 'arguments') "$RunId.json";New-Item -ItemType Directory -Force -Path (Split-Path -Parent $argumentsFile)|Out-Null;[IO.File]::WriteAllText($argumentsFile,($ArgumentList|ConvertTo-Json -Compress),[Text.UTF8Encoding]::new($false));$cwd=if($WorkingDirectory){Resolve-ProjectPath $WorkingDirectory}else{$project};& (Join-Path $harnessRoot 'bin\agentic-run.ps1') -FilePath $FilePath -ArgumentsFile $argumentsFile -WorkingDirectory $cwd -RuntimeRoot $runtime -RunId $RunId -Phase 'direct';exit $LASTEXITCODE}
+if(-not(Test-Path -LiteralPath $workflow -PathType Leaf)){throw "Workflow definition was not found: $workflow"};$manifestPath=Join-Path (Join-Path $runtime 'manifests') "$RunId.json";$cacheRoot=Join-Path $runtime 'workflow-cache'
+if($Action -eq 'start'){$relative=$workflow.Substring($project.Length).TrimStart('\','/');& (Join-Path $harnessRoot 'bin\workflow-compile.ps1') -ProjectRoot $project -WorkflowPath $relative -CacheRoot $cacheRoot -OutputPath $manifestPath|Out-Null;if($LASTEXITCODE -ne 0){throw 'Workflow contract compilation failed.'}}elseif(-not(Test-Path -LiteralPath $manifestPath)){throw "No compiled native workflow contract exists for run_id=$RunId. Start the workflow before resume."}
+& (Join-Path $harnessRoot 'bin\workflow-validate.ps1') -ManifestPath $manifestPath|Out-Null;if($LASTEXITCODE -ne 0){throw 'Native workflow contract validation failed.'};$manifest=Get-Content -Raw $manifestPath|ConvertFrom-Json
+$state=[ordered]@{schemaVersion=1;runId=$RunId;workflowId=if($resolvedWorkflowId){$resolvedWorkflowId}else{'explicit'};phase='preflight';completedPhases=@();implementationTree=$null;reviewTree=$null;reviewStatus=$null;gateTree=$null;gateStatus=$null;manifestFingerprint=[string]$manifest.fingerprint;manifestPath=$manifestPath;nativeRoles=@($manifest.nodes|Where-Object type -in @('agent','decision')|ForEach-Object role)}
+if($Action -eq 'resume' -and (Test-Path -LiteralPath $statePath)){$old=Get-Content -Raw $statePath|ConvertFrom-Json;if($old.manifestFingerprint -ne $manifest.fingerprint){throw 'RESUME_BLOCKED: workflow source fingerprint changed.'};$state=$old};New-Item -ItemType Directory -Force -Path (Split-Path -Parent $statePath)|Out-Null;[IO.File]::WriteAllText($statePath,($state|ConvertTo-Json -Depth 20),[Text.UTF8Encoding]::new($false))
+[ordered]@{status=if($Action -eq 'resume'){'RESUMED'}else{'READY'};mode='NATIVE';workflowId=$state.workflowId;runId=$RunId;manifestPath=$manifestPath;statePath=$statePath;orderedPhases=@($manifest.nodes|ForEach-Object id);nativeRoles=$state.nativeRoles;message='Native agents execute semantic phases; receipts and guards enforce mechanical order.'}|Compact

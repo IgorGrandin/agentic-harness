@@ -34,12 +34,12 @@ try {
     if ($null -eq $aliasProperty) { Fail "alias is not registered: $Alias" }
     $workflowId = [string]$aliasProperty.Value
     $registryWorkflow = $registry.workflows.PSObject.Properties[$workflowId]
-    if ($null -eq $registryWorkflow -or $registryWorkflow.Value.mode -ne 'GRAPH') { Fail "registered workflow is not GRAPH: $workflowId" }
+    if ($null -eq $registryWorkflow -or $registryWorkflow.Value.mode -ne 'NATIVE') { Fail "registered workflow is not NATIVE: $workflowId" }
     $bindingWorkflow = $binding.workflows.PSObject.Properties[$workflowId]
     if ($null -eq $bindingWorkflow -or [string]::IsNullOrWhiteSpace([string]$bindingWorkflow.Value.definition)) { Fail "binding has no definition for: $workflowId" }
     $definition = Resolve-Local $root ([string]$bindingWorkflow.Value.definition)
     if (-not (Test-Path -LiteralPath $definition -PathType Leaf)) { Fail "workflow definition not found: $($bindingWorkflow.Value.definition)" }
-    [ordered]@{ status = 'RESOLVED'; mode = 'GRAPH'; alias = $normalized; workflowId = $workflowId; workflowPath = $definition; bindingPath = $bindingFull; registryPath = $registryFull } | ConvertTo-Json -Compress
+    [ordered]@{ status = 'RESOLVED'; mode = 'NATIVE'; alias = $normalized; workflowId = $workflowId; workflowPath = $definition; bindingPath = $bindingFull; registryPath = $registryFull } | ConvertTo-Json -Compress
 } catch {
     [ordered]@{ status = 'FAILED'; error = $_.Exception.Message } | ConvertTo-Json -Compress
     exit 1

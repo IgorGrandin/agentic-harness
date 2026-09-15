@@ -39,12 +39,11 @@
       "skills",
       "config",
       "bin",
-      "workflows",
-      "runtime"
+      "workflows"
     ],
     "files": [
       "portable-manifest.json",
-      "pyproject.toml"
+    "pyproject.toml"
     ]
   },
   "memoryFiles": [

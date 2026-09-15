@@ -7,7 +7,7 @@
   },
   "workflows": {
     "execute": {
-      "mode": "GRAPH"
+      "mode": "NATIVE"
     }
   }
 }

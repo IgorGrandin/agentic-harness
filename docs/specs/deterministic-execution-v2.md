@@ -31,6 +31,6 @@ No LangGraph, workflow/DAG engine, daemon, queue, event bus, Python dependency, 
 
 ## Future compatibility
 
-V2.5 may compile authoritative workflow sources into a validated execution manifest. A deterministic fingerprint is only cache invalidation and must cover `/execute` plus its relevant dependencies; it is not "hash compilation". V3 may optionally let LangGraph consume those manifests and the V2 run-state schema for checkpoint/resume and approval transitions. The Markdown harness remains authoritative, direct execution remains available, and these runners remain the deterministic execution layer.
+V2.5 compiles authoritative workflow sources into a validated native execution contract. A deterministic fingerprint is only cache invalidation and must cover `/execute` plus its relevant dependencies; it is not "hash compilation". Native agents consume the contract while the Markdown harness remains authoritative, direct execution remains available, and these runners remain the deterministic enforcement layer.
 
 Keep three concepts separate: provider token cache, V2.5 workflow-manifest cache, and V2/V3 run state or checkpoint.

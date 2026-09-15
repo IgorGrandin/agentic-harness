@@ -41,9 +41,9 @@ pwsh -File .\scripts\install.ps1 -WhatIf
 pwsh -File .\scripts\install.ps1
 ```
 
-Materialization composes the same Core and profile Markdown into Codex `AGENTS.md`, a Cursor `.mdc` global rule, and Antigravity `GEMINI.md`. The installer is allowlisted, repeatable, path-checked, and backs up managed targets. It provisions only the pinned managed LangGraph Python environment under the harness runtime; it does not download models, authenticate MCP, change Cursor account rules, or install hooks.
+Materialization composes the same Core and profile Markdown into Codex `AGENTS.md`, a Cursor `.mdc` global rule, and Antigravity `GEMINI.md`. The installer is allowlisted, repeatable, path-checked, and backs up managed targets. It installs portable deterministic scripts and declarative assets; native agent runtimes, models, authentication, and MCP remain external.
 
-The managed Python replacement is staged and atomically swapped only after its transitively hash-locked dependencies verify. Generating `runtime/requirements-langgraph.lock` itself is a separately authorized networked step: `pwsh -File .\runtime\generate-langgraph-lock.ps1 -BootstrapPython <python>`.
+No Python workflow runtime is required or installed.
 
 ### Installed locations
 
@@ -58,7 +58,7 @@ Copies are used instead of Windows links. This avoids Developer Mode and privile
 
 `agentic-run.ps1` receives an explicit executable plus arguments, waits internally through success, failure, or timeout, stores stdout/stderr and run state under the machine temporary directory by default, and emits one compact JSON result. Arguments are not persisted, and log tails are opt-in. `agentic-finalize.ps1` captures Git metadata from a small JSON manifest; round-log writes require `-AllowWrite`, while staging and commit require both manifest intent and `-AllowCommit`. Project instructions remain authoritative for command and finalization semantics.
 
-The V2.1 runner additionally resolves available Windows Node/NVM tools, preserves warning output on successful commands, hard-caps returned summaries, kills timed-out process trees, and returns uppercase terminal states. Its argv transport uses `ProcessStartInfo.ArgumentList`, so empty values, spaces, quotes, and metacharacters remain exact. V2.5 accepts only explicitly declared workflow definitions and fingerprints their declared transitive sources. V3 makes LangGraph the outer orchestrator after `agentic-execute.ps1` bootstrap: semantic nodes call authenticated `codex exec` through a provider adapter, commands/gates call the blocking runner, and finalization calls the manifest-authorized finalizer. DIRECT mode remains for an explicit ad-hoc command; GRAPH mode never invents a project command or dependency.
+The V2.1 runner resolves available Windows Node/NVM tools, preserves warning output on successful commands, bounds summaries, kills timed-out process trees, and returns uppercase terminal states. Its argv transport preserves empty values, spaces, quotes, and metacharacters. Registered workflows compile into small native contracts with declared sources, roles, gates, receipts, and state/resume; native agents perform semantic work while deterministic scripts enforce order. DIRECT mode remains for explicit ad-hoc commands, and ordinary hotfixes never require a workflow contract.
 
 ## Cursor
 
@@ -152,5 +152,5 @@ pwsh -File .\tests\test-execution-boundary.ps1
 pwsh -File .\tests\test-runner-v2.1.ps1
 pwsh -File .\tests\test-workflow-v2.5-v3.ps1
 pwsh -File .\tests\test-execute-dispatcher.ps1
-~/.agentic-harness/runtime/python/Scripts/python.exe -m unittest discover -s tests -p test_langgraph_runtime.py
+pwsh -File .\tests\test-native-workflow.ps1
 ```

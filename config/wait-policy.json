@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "defaultCommandTimeoutSeconds": 3600,
+  "defaultAgentWaitSeconds": 3600,
+  "platformWaitCapSeconds": 3600,
+  "shortWaitSeconds": 5,
+  "polling": "disabled-for-blocking-runs"
+}

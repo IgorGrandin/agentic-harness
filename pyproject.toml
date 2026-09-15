@@ -5,16 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agentic-harness-runtime"
 version = "0.3.0"
-description = "Optional LangGraph runtime for validated agentic-harness manifests"
+description = "Portable deterministic enforcement for native agent orchestration"
 requires-python = ">=3.11"
 dependencies = []
 
-[project.optional-dependencies]
-langgraph = [
-  "langgraph==1.2.11",
-  "langgraph-checkpoint-sqlite==3.1.1"
-]
-
 [tool.agentic-harness]
 direct-runtime = "bin"
-langgraph-runtime = "runtime/langgraph_runtime.py"
+workflow-runtime = "native"

@@ -5,7 +5,7 @@
 
 ## Decision
 
-V3 makes LangGraph the outer orchestrator after a small Codex bootstrap. The root resolves an explicit source and invokes `agentic-execute.ps1`; it does not dispatch nodes or poll subprocesses. DIRECT mode remains available only for an explicit ad-hoc executable. GRAPH mode consumes a validated declarative workflow manifest.
+The native architecture keeps Codex/Cursor/other adapters as semantic orchestrators after a small deterministic bootstrap. The root resolves an explicit source and invokes `agentic-execute.ps1`; it does not shadow delegated work or poll subprocesses. DIRECT mode remains available only for an explicit ad-hoc executable. NATIVE mode consumes a validated declarative workflow contract.
 
 ## Contract
 
@@ -21,13 +21,13 @@ Commands and gates call `agentic-run.ps1`, which preserves argv items with `Proc
 - A finalization edge can originate only at `GATE(GREEN)`.
 - A finding routes through correction and re-review before a gate can run.
 - Gate failure blocks finalization.
-- SQLite checkpoints are keyed by run ID and reject a changed manifest fingerprint on resume.
+- JSON state is keyed by run ID and rejects a changed contract fingerprint on resume.
 - No production scenario fields or synthetic LLM counters control runtime behavior.
 
 ## Installation and limits
 
-`scripts/install.ps1` stages a replacement `~/.agentic-harness/runtime/python` venv, installs only a transitively hash-locked `runtime/requirements-langgraph.lock`, verifies imports and versions, then swaps it atomically while retaining the previous venv for rollback. The checked-in two-package input is not accepted as an install lock: in a separately authorized networked installation phase generate the transitive hash lock with `pwsh -File runtime/generate-langgraph-lock.ps1 -BootstrapPython <python>`. Checkpoints, raw logs, cache, and virtual environments remain outside project worktrees.
+`scripts/install.ps1` installs portable scripts and declarative assets only. State, receipts, raw logs, and cache remain outside project worktrees under the machine runtime directory.
 
 The installer removes `architect_escalation.toml` only when it is byte-for-byte the exact duplicate of canonical `architect-escalation.toml`; otherwise it stops rather than deleting user-owned content.
 
-Deterministic unit tests exercise compilation, cache invalidation, manifest rejection, argv preservation, JSONL/schema parsing, routing, correction/re-review, finalization blocking, and checkpoint fingerprint handling. A live Codex call is deliberately not repeated; it remains an independent verifier action because it consumes authenticated service capacity.
+Deterministic unit tests exercise compilation, cache invalidation, contract rejection, argv preservation, routing, correction/re-review, receipt guards, finalization blocking, and JSON state fingerprint handling. A live native-agent call is deliberately not repeated; it remains an independent verifier action because it consumes authenticated service capacity.

@@ -46,14 +46,10 @@ $required = @(
     ,'bin\agentic-finalize.ps1'
     ,'bin\workflow-compile.ps1'
     ,'bin\workflow-validate.ps1'
-    ,'bin\workflow-graph.ps1'
     ,'bin\agentic-execute.ps1'
     ,'bin\workflow-resolve.ps1'
-    ,'runtime\__init__.py'
-    ,'runtime\langgraph_runtime.py'
-    ,'runtime\requirements-langgraph.lock'
-    ,'runtime\requirements-langgraph.in'
-    ,'runtime\generate-langgraph-lock.ps1'
+    ,'bin\workflow-receipts.ps1'
+    ,'config\wait-policy.json'
     ,'pyproject.toml'
 )
 foreach ($relative in $required) {
@@ -61,7 +57,7 @@ foreach ($relative in $required) {
 }
 
 if ($null -ne $manifest) {
-    if ($manifest.schemaVersion -ne 4) { $errors.Add("Unsupported manifest schema version: $($manifest.schemaVersion)") }
+if ($manifest.schemaVersion -ne 4) { $errors.Add("Unsupported manifest schema version: $($manifest.schemaVersion)") }
     foreach ($name in $manifest.corePolicyFiles) {
         if (-not (Test-Path -LiteralPath (Join-Path $repoRoot "core\policies\$name"))) { $errors.Add("Missing core policy: $name") }
     }

@@ -5,7 +5,7 @@ param(
     [string]$ArgumentsJson = '',
     [string]$ArgumentsFile = '',
     [string]$WorkingDirectory = (Get-Location).Path,
-    [ValidateRange(1, 2147483)][int]$TimeoutSeconds = 3600,
+    [ValidateRange(0, 2147483)][int]$TimeoutSeconds = 0,
     [string]$RunId = ([Guid]::NewGuid().ToString('N')),
     [string]$Task = '',
     [string]$Phase = 'command',
@@ -17,6 +17,8 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$waitPolicyPath = Join-Path $PSScriptRoot '..\config\wait-policy.json'
+if ($TimeoutSeconds -eq 0) { $TimeoutSeconds = [int]((Get-Content -Raw -LiteralPath $waitPolicyPath | ConvertFrom-Json).defaultCommandTimeoutSeconds) }
 if ($ArgumentsFile -and $ArgumentsJson) { throw 'ArgumentsJson and ArgumentsFile are mutually exclusive.' }
 if ($ArgumentsFile) {
     if (-not (Test-Path -LiteralPath $ArgumentsFile -PathType Leaf)) { throw "ArgumentsFile was not found: $ArgumentsFile" }
