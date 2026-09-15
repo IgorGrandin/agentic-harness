@@ -2,6 +2,7 @@
   "schemaVersion": 4,
   "corePolicyFiles": [
     "context-memory.md",
+    "kernel.md",
     "deterministic-execution.md",
     "session-lifecycle.md",
     "evidence.md",

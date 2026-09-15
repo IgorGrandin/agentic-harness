@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "kernel-request",
+  "role": "implementer",
+  "workerId": "worker-7",
+  "constraintsOverlay": true,
+  "contextSources": ["task.md", "constraints.md"],
+  "budgets": { "contextTokens": 4096, "outputTokens": 1024 },
+  "failure": { "workerId": "worker-7", "reason": "terminal failure" }
+}

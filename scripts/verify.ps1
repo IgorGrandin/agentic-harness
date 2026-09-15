@@ -15,6 +15,7 @@ $required = @(
     'README.md',
     'global\AGENTS.md',
     'core\policies\context-memory.md',
+    'core\policies\kernel.md',
     'core\policies\deterministic-execution.md',
     'core\policies\session-lifecycle.md',
     'core\policies\evidence.md',
@@ -49,6 +50,7 @@ $required = @(
     ,'bin\agentic-execute.ps1'
     ,'bin\workflow-resolve.ps1'
     ,'bin\workflow-receipts.ps1'
+    ,'bin\agentic-kernel.ps1'
     ,'config\wait-policy.json'
     ,'pyproject.toml'
 )
